@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <title>Assistant Audit IA</title>
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js" type="text/javascript"></script>
+    
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; padding: 15px; background-color: #f3f2f1; }
+        .container { display: flex; flex-direction: column; gap: 10px; }
+        h2 { color: #2b579a; margin-top: 0; }
+        p { font-size: 14px; color: #333; }
+        
+        /* Style du bouton style "Word" */
+        .ms-Button {
+            background-color: #2b579a; color: white; border: none; padding: 10px 20px;
+            cursor: pointer; font-size: 14px; font-weight: 600; width: 100%;
+        }
+        .ms-Button:hover { background-color: #1e3f72; }
+        
+        /* Zone de résultat */
+        #result-area {
+            margin-top: 20px; padding: 10px; background: white; 
+            border: 1px solid #c8c6c4; min-height: 100px; display: none;
+        }
+        .loading { color: #666; font-style: italic; }
+        .correction-item { border-bottom: 1px solid #eee; padding: 5px 0; }
+        .correction-badge { background: #e81123; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-right: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Audit Interne IA</h2>
+    <p>Sélectionnez du texte dans votre document et cliquez sur le bouton ci-dessous pour lancer l'analyse.</p>
+    
+    <button id="run-btn" class="ms-Button">🔍 Analyser la sélection</button>
+
+    <div id="result-area">
+        </div>
+</div>
+
+<script>
+    Office.onReady(function (info) {
+        if (info.host === Office.HostType.Word) {
+            document.getElementById("run-btn").onclick = runAnalysis;
+        }
+    });
+
+    function runAnalysis() {
+        var resultArea = document.getElementById("result-area");
+        resultArea.style.display = "block";
+        resultArea.innerHTML = '<p class="loading">Consultation du modèle IA de l\'entreprise en cours...</p>';
+
+        Word.run(function (context) {
+            // 1. Récupérer la sélection
+            var selection = context.document.getSelection();
+            selection.load("text");
+
+            return context.sync()
+                .then(function () {
+                    // Si aucune sélection
+                    if (selection.text.trim() === "") {
+                        resultArea.innerHTML = "<p style='color:orange'>Veuillez sélectionner du texte d'abord.</p>";
+                        return;
+                    }
+
+                    // 2. SIMULATION DE L'APPEL API (Placeholder)
+                    // Ici, on simule un délai de 1.5 secondes comme si le serveur réfléchissait
+                    setTimeout(function() {
+                        displayMockResults(selection.text);
+                    }, 1500);
+                });
+        }).catch(function (error) {
+            console.log("Error: " + error);
+            if (error instanceof OfficeExtension.Error) {
+                console.log("Debug info: " + JSON.stringify(error.debugInfo));
+            }
+        });
+    }
+
+    function displayMockResults(textAnalyzed) {
+        var resultArea = document.getElementById("result-area");
+        // Ceci est le contenu fictif pour la démo
+        var htmlContent = "<h3>Résultat de l'analyse :</h3>";
+        
+        // On affiche un bout du texte analysé
+        htmlContent += "<p><em>Texte analysé : " + textAnalyzed.substring(0, 30) + "...</em></p>";
+        
+        // Fausses corrections
+        htmlContent += "<div class='correction-item'><span class='correction-badge'>Grammaire</span> Accord sujet-verbe détecté ligne 1.</div>";
+        htmlContent += "<div class='correction-item'><span class='correction-badge'>Style</span> Phrase trop longue (risque de clarté).</div>";
+        htmlContent += "<div class='correction-item'><span class='correction-badge'>Audit</span> Terme 'Confidentialité' manquant dans cette clause.</div>";
+        
+        htmlContent += "<p style='color:green; margin-top:15px; font-weight:bold'>Connexion API simulée avec succès.</p>";
+        
+        resultArea.innerHTML = htmlContent;
+    }
+</script>
+
+</body>
+</html>
