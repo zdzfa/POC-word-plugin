@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <title>Résultat IA</title>
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js" type="text/javascript"></script>
+    <style>
+        :root {
+            --blue: #0F6CBD;
+            --blue-dark: #0A4D8C;
+            --blue-light: #E8F1FA;
+            --bg: #F5F5F5;
+            --surface: #FFFFFF;
+            --text: #1B1B1B;
+            --text-sec: #5C5C5C;
+            --border: #E1E1E1;
+            --success: #107C10;
+            --error: #C4314B;
+            --r: 8px;
+            --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 14px;
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dialog-header {
+            background: linear-gradient(135deg, #0F6CBD 0%, #0A4D8C 100%);
+            color: #fff;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+        .dialog-header-icon { font-size: 24px; }
+        .dialog-header-title { font-size: 17px; font-weight: 700; }
+        .dialog-header-sub { font-size: 12px; opacity: .8; }
+
+        .dialog-toolbar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 24px;
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+        .dialog-btn {
+            padding: 7px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            background: var(--surface);
+            font-family: var(--font);
+            font-size: 13px;
+            cursor: pointer;
+            color: var(--text-sec);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all .18s ease;
+        }
+        .dialog-btn:hover { background: var(--blue-light); border-color: var(--blue); color: var(--blue-dark); }
+        .dialog-btn-primary {
+            background: var(--blue);
+            color: #fff;
+            border-color: var(--blue);
+        }
+        .dialog-btn-primary:hover { background: var(--blue-dark); }
+        .dialog-btn-close {
+            margin-left: auto;
+        }
+
+        .dialog-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        /* Source text preview */
+        .source-block {
+            background: var(--blue-light);
+            border: 1px solid #C5D9ED;
+            border-radius: var(--r);
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+        .source-label {
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--blue-dark);
+            letter-spacing: .5px;
+            margin-bottom: 4px;
+        }
+        .source-text {
+            color: var(--text-sec);
+            max-height: 80px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Result content */
+        .result-content { line-height: 1.7; font-size: 14px; }
+        .result-content h3 { font-size: 15px; margin: 16px 0 8px; color: var(--blue-dark); }
+        .result-content h3:first-child { margin-top: 0; }
+        .result-content p { margin: 6px 0; }
+        .result-content ul, .result-content ol { padding-left: 22px; margin: 6px 0; }
+        .result-content li { margin: 3px 0; }
+        .result-content table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+        .result-content table th { background: var(--blue-light); color: var(--blue-dark); font-weight: 600; text-align: left; padding: 8px 10px; border: 1px solid var(--border); }
+        .result-content table td { padding: 7px 10px; border: 1px solid var(--border); }
+        .result-content table tr:nth-child(even) td { background: #FAFBFC; }
+
+        .diff-del { background: #FECDD3; color: #9F1239; text-decoration: line-through; padding: 1px 4px; border-radius: 3px; }
+        .diff-ins { background: #BBF7D0; color: #166534; padding: 1px 4px; border-radius: 3px; font-weight: 500; }
+
+        .section-block { border: 1px solid var(--border); border-radius: var(--r); margin: 8px 0; overflow: hidden; }
+        .section-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #F8F9FA; font-weight: 600; font-size: 13px; gap: 8px; }
+        .section-header .badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; color: #fff; }
+        .badge-critical { background: var(--error); }
+        .badge-major { background: #E97025; }
+        .badge-moderate { background: #D48C00; color: #333; }
+        .badge-minor { background: var(--blue); }
+        .section-body { padding: 10px 12px; font-size: 13px; border-top: 1px solid var(--border); }
+
+        .exec-summary { background: var(--blue-light); border: 1px solid #C5D9ED; border-radius: var(--r); padding: 12px 16px; margin-bottom: 12px; }
+        .exec-summary-title { font-weight: 700; font-size: 14px; color: var(--blue-dark); margin-bottom: 4px; }
+
+        .report-meta { background: #F5F6F7; border-radius: var(--r); padding: 10px 14px; margin-bottom: 12px; font-size: 13px; }
+        .report-meta-row { display: flex; gap: 8px; padding: 2px 0; }
+        .report-meta-label { font-weight: 600; color: var(--text-sec); min-width: 80px; }
+
+        .annotation-block { border-left: 3px solid var(--blue); background: var(--blue-light); padding: 10px 14px; margin: 8px 0; border-radius: 0 var(--r) var(--r) 0; }
+        .annotation-block.improved { border-left-color: var(--success); background: #DFF6DD; }
+        .annotation-label { font-weight: 600; font-size: 11px; text-transform: uppercase; margin-bottom: 3px; }
+
+        .score-display { display: inline-flex; align-items: center; gap: 6px; font-size: 24px; font-weight: 700; color: var(--blue); margin: 8px 0; }
+        .score-display .score-label { font-size: 14px; font-weight: 400; color: var(--text-sec); }
+
+        /* Toast */
+        .toast-box { position: fixed; top: 12px; right: 12px; z-index: 100; }
+        .toast { background: #333; color: #fff; padding: 8px 16px; border-radius: var(--r); font-size: 13px; margin-bottom: 6px; animation: tIn .2s ease; }
+        .toast-success { background: var(--success); }
+        @keyframes tIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Print styles */
+        @media print {
+            .dialog-header, .dialog-toolbar, .toast-box { display: none; }
+            .dialog-body { padding: 20px; overflow: visible; }
+            body { height: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="dialog-header">
+    <div class="dialog-header-icon" id="dIcon">&#9889;</div>
+    <div>
+        <div class="dialog-header-title" id="dTitle">Résultat IA</div>
+        <div class="dialog-header-sub" id="dSub">Assistant IA</div>
+    </div>
+</div>
+
+<div class="dialog-toolbar">
+    <button class="dialog-btn" onclick="doCopy()">&#128203; Copier le texte</button>
+    <button class="dialog-btn" onclick="doPrint()">&#128424; Imprimer</button>
+    <button class="dialog-btn dialog-btn-close" onclick="doClose()">&#10005; Fermer</button>
+</div>
+
+<div class="dialog-body">
+    <div id="sourceBlock" class="source-block hidden">
+        <div class="source-label">Texte source</div>
+        <div class="source-text" id="sourceText"></div>
+    </div>
+    <div class="result-content" id="resultContent">
+        <p style="color:var(--text-sec);text-align:center;padding:40px;">Chargement...</p>
+    </div>
+</div>
+
+<div class="toast-box" id="toastBox"></div>
+
+<script>
+var receivedData = null;
+
+function showToast(text, type) {
+    var box = document.getElementById('toastBox');
+    var t = document.createElement('div');
+    t.className = 'toast' + (type ? ' toast-' + type : '');
+    t.textContent = text;
+    box.appendChild(t);
+    setTimeout(function() { if (t.parentNode) t.remove(); }, 2500);
+}
+
+function doCopy() {
+    var el = document.getElementById('resultContent');
+    var text = el.textContent || el.innerText || '';
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() { showToast('Copié !', 'success'); });
+    } else {
+        var ta = document.createElement('textarea');
+        ta.value = text; ta.style.cssText = 'position:fixed;left:-9999px';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); showToast('Copié !', 'success'); } catch(e) {}
+        document.body.removeChild(ta);
+    }
+}
+
+function doPrint() { window.print(); }
+
+function doClose() {
+    try { Office.context.ui.messageParent('close'); } catch(e) { window.close(); }
+}
+
+function applyData(data) {
+    receivedData = data;
+
+    if (data.assistantIcon) document.getElementById('dIcon').textContent = data.assistantIcon;
+    if (data.assistantName) {
+        document.getElementById('dTitle').textContent = data.assistantName;
+        document.getElementById('dSub').textContent = 'Résultat — Assistant IA';
+    }
+    if (data.sourceText) {
+        document.getElementById('sourceBlock').classList.remove('hidden');
+        document.getElementById('sourceText').textContent = data.sourceText;
+    }
+    if (data.resultHtml) {
+        document.getElementById('resultContent').innerHTML = data.resultHtml;
+    }
+}
+
+// Office Dialog API
+Office.onReady(function() {
+    try {
+        Office.context.ui.addHandlerAsync(
+            Office.EventType.DialogParentMessageReceived,
+            function(arg) {
+                try { applyData(JSON.parse(arg.message)); } catch(e) {}
+            }
+        );
+        Office.context.ui.messageParent('ready');
+    } catch(e) {}
+});
+
+// Fallback: check URL params or postMessage
+window.addEventListener('message', function(e) {
+    try { applyData(JSON.parse(e.data)); } catch(ex) {}
+});
+</script>
+
+</body>
+</html>
