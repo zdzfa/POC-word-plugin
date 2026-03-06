@@ -351,6 +351,26 @@
 
         .hidden { display:none !important; }
 
+        /* Track Changes toggle */
+        .tc-toggle {
+            display:flex; align-items:center; gap:6px;
+            padding:5px 0; margin-bottom:5px; font-size:11px;
+        }
+        .tc-toggle label { color:var(--text-sec); cursor:pointer; user-select:none; display:flex; align-items:center; gap:6px; }
+        .tc-switch {
+            position:relative; width:32px; height:18px;
+            background:var(--border); border-radius:9px;
+            cursor:pointer; transition:background var(--tr); flex-shrink:0;
+        }
+        .tc-switch::after {
+            content:''; position:absolute; top:2px; left:2px;
+            width:14px; height:14px; border-radius:50%;
+            background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.2);
+            transition:transform var(--tr);
+        }
+        .tc-switch.active { background:var(--blue); }
+        .tc-switch.active::after { transform:translateX(14px); }
+
         /* ---- Options dropdown inline ---- */
         .options-bar { display:flex; gap:4px; margin-bottom:7px; flex-wrap:wrap; }
         .opt-chip {
@@ -439,13 +459,21 @@
                 <span class="sel-label">&#128196; Texte s&eacute;lectionn&eacute;</span>
                 <span class="sel-stats" id="selStats"></span>
             </div>
-            <div id="selContent" class="sel-empty">S&eacute;lectionnez du texte dans Word...</div>
+            <div id="selContent" class="sel-empty">S&eacute;lectionnez du texte dans le document...</div>
         </div>
 
         <!-- Toolbar: select all, select paragraph -->
         <div class="sel-toolbar" id="selToolbar">
-            <button class="sel-tb-btn" onclick="WordAPI.selectAll()" title="S&eacute;lectionner tout le document">&#128462; Tout s&eacute;lectionner</button>
-            <button class="sel-tb-btn" onclick="WordAPI.selectCurrentParagraph()" title="S&eacute;lectionner le paragraphe actuel">&#182; Paragraphe</button>
+            <button class="sel-tb-btn" onclick="HostAPI.selectAll()" title="S&eacute;lectionner tout le contenu">&#128462; Tout s&eacute;lectionner</button>
+            <button class="sel-tb-btn" id="btnParagraph" onclick="HostAPI.selectCurrentParagraph()" title="S&eacute;lectionner le paragraphe actuel">&#182; Paragraphe</button>
+        </div>
+
+        <!-- Track Changes toggle (Word only) -->
+        <div class="tc-toggle" id="tcToggle" style="display:none">
+            <label onclick="Handlers.toggleTrackChanges()">
+                <span class="tc-switch" id="tcSwitch"></span>
+                <span>&#128221; Mode R&eacute;vision</span>
+            </label>
         </div>
 
         <!-- Dynamic options (language, tone, etc.) -->
@@ -491,8 +519,8 @@ var CONFIG = {
     // Polling sélection Word (ms)
     selectionPollInterval: 1200,
 
-    // URL du dialogue résultat (fenêtre séparée)
-    dialogUrl: 'result-dialog.html',
+    // URL du dialogue résultat (fenêtre séparée) — doit être une URL absolue
+    dialogUrl: 'https://zdzfa.github.io/POC-word-plugin/result-dialog',
 
     // Délai simulation en mode mock (ms)
     mockDelay: 1500
@@ -773,76 +801,194 @@ var AppState = {
     lastResponseHtml: '',
     lastResponsePlain: '',
     activeTab: 'tools',
-    dynamicValues: {}         // For language, tone, format selections
+    dynamicValues: {},        // For language, tone, format selections
+    hostName: 'le document',  // Updated in Office.onReady
+    useTrackChanges: true     // Insert/Replace in revision mode (Word only)
 };
 
-// ── WORD API ───────────────────────────────────────────────
-var WordAPI = {
-    getSelectedText: function() {
-        return Word.run(function(ctx) {
-            var sel = ctx.document.getSelection();
-            sel.load('text');
-            return ctx.sync().then(function() { return sel.text; });
-        }).catch(function() { return ''; });
-    },
+// ── HOST API (Common API — works in Word, Excel, PowerPoint) ──
+var HostAPI = {
+    hostType: null, // Set during Office.onReady
 
-    selectAll: function() {
-        Word.run(function(ctx) {
-            var body = ctx.document.body;
-            body.load('text');
-            return ctx.sync().then(function() {
-                var range = body.getRange();
-                range.select();
-                return ctx.sync();
-            });
-        }).then(function() {
-            UI.showToast('Document entier s\u00e9lectionn\u00e9', 'success');
-            // Force immediate poll
-            WordAPI.pollSelection();
-        }).catch(function() {
-            UI.showToast('Erreur de s\u00e9lection', 'error');
+    getSelectedText: function() {
+        return new Promise(function(resolve) {
+            Office.context.document.getSelectedDataAsync(
+                Office.CoercionType.Text,
+                function(result) {
+                    if (result.status === Office.AsyncResultStatus.Succeeded) {
+                        resolve(result.value || '');
+                    } else {
+                        resolve('');
+                    }
+                }
+            );
         });
     },
 
-    selectCurrentParagraph: function() {
-        Word.run(function(ctx) {
-            var sel = ctx.document.getSelection();
-            var paragraphs = sel.paragraphs;
-            paragraphs.load('text');
-            return ctx.sync().then(function() {
-                if (paragraphs.items.length > 0) {
-                    var range = paragraphs.items[0].getRange();
+    selectAll: function() {
+        // Word: use Word API for precise select-all
+        if (HostAPI.hostType === Office.HostType.Word) {
+            Word.run(function(ctx) {
+                var body = ctx.document.body;
+                body.load('text');
+                return ctx.sync().then(function() {
+                    var range = body.getRange();
                     range.select();
                     return ctx.sync();
-                }
+                });
+            }).then(function() {
+                UI.showToast('Document entier s\u00e9lectionn\u00e9', 'success');
+                HostAPI.pollSelection();
+            }).catch(function() {
+                UI.showToast('Erreur de s\u00e9lection', 'error');
             });
-        }).then(function() {
-            UI.showToast('Paragraphe s\u00e9lectionn\u00e9', 'success');
-            WordAPI.pollSelection();
-        }).catch(function() {
-            UI.showToast('Erreur de s\u00e9lection', 'error');
+        }
+        // Excel: select all used range
+        else if (HostAPI.hostType === Office.HostType.Excel) {
+            Excel.run(function(ctx) {
+                var sheet = ctx.workbook.worksheets.getActiveWorksheet();
+                var range = sheet.getUsedRange();
+                range.select();
+                range.load('text');
+                return ctx.sync().then(function() {
+                    var text = range.text.map(function(row) { return row.join('\t'); }).join('\n');
+                    AppState.selectedText = text;
+                    UI.updateSelectionPreview();
+                    UI.updateSendButton();
+                });
+            }).then(function() {
+                UI.showToast('Plage utilis\u00e9e s\u00e9lectionn\u00e9e', 'success');
+            }).catch(function() {
+                UI.showToast('Erreur de s\u00e9lection', 'error');
+            });
+        }
+        // PowerPoint: just read current selection via Common API
+        else {
+            Office.context.document.getSelectedDataAsync(
+                Office.CoercionType.Text,
+                function(result) {
+                    if (result.status === Office.AsyncResultStatus.Succeeded) {
+                        AppState.selectedText = result.value || '';
+                        UI.updateSelectionPreview();
+                        UI.updateSendButton();
+                        UI.showToast('Texte s\u00e9lectionn\u00e9 r\u00e9cup\u00e9r\u00e9', 'success');
+                    } else {
+                        UI.showToast('S\u00e9lectionnez du texte dans la diapositive', 'error');
+                    }
+                }
+            );
+        }
+    },
+
+    selectCurrentParagraph: function() {
+        // Only available in Word
+        if (HostAPI.hostType === Office.HostType.Word) {
+            Word.run(function(ctx) {
+                var sel = ctx.document.getSelection();
+                var paragraphs = sel.paragraphs;
+                paragraphs.load('text');
+                return ctx.sync().then(function() {
+                    if (paragraphs.items.length > 0) {
+                        var range = paragraphs.items[0].getRange();
+                        range.select();
+                        return ctx.sync();
+                    }
+                });
+            }).then(function() {
+                UI.showToast('Paragraphe s\u00e9lectionn\u00e9', 'success');
+                HostAPI.pollSelection();
+            }).catch(function() {
+                UI.showToast('Erreur de s\u00e9lection', 'error');
+            });
+        } else {
+            UI.showToast('Disponible uniquement dans Word', 'error');
+        }
+    },
+
+    // Check if the host supports changeTrackingMode (WordApi 1.4+)
+    supportsTrackChanges: function() {
+        try {
+            return Office.context.requirements.isSetSupported('WordApi', '1.4');
+        } catch(e) { return false; }
+    },
+
+    // Helper: wraps a Word.run callback to enable/restore track changes
+    _withTrackChanges: function(wordRunCallback) {
+        var canTrack = AppState.useTrackChanges && HostAPI.supportsTrackChanges();
+        return Word.run(function(ctx) {
+            var doc = ctx.document;
+            if (canTrack) {
+                doc.load('changeTrackingMode');
+                return ctx.sync().then(function() {
+                    var previousMode = doc.changeTrackingMode;
+                    doc.changeTrackingMode = Word.ChangeTrackingMode.trackAll;
+                    return wordRunCallback(ctx).then(function() {
+                        // Restore previous mode if it was different
+                        if (previousMode !== Word.ChangeTrackingMode.trackAll) {
+                            doc.changeTrackingMode = previousMode;
+                        }
+                        return ctx.sync();
+                    });
+                });
+            } else {
+                return wordRunCallback(ctx);
+            }
         });
     },
 
     insertAfterSelection: function(html) {
-        return Word.run(function(ctx) {
-            var sel = ctx.document.getSelection();
-            var plainText = UI.stripHtml(html);
-            sel.insertText('\n\n' + plainText, Word.InsertLocation.after);
-            return ctx.sync();
+        var plainText = UI.stripHtml(html);
+        // Word: use Word API with optional track changes
+        if (HostAPI.hostType === Office.HostType.Word) {
+            return HostAPI._withTrackChanges(function(ctx) {
+                var sel = ctx.document.getSelection();
+                sel.insertText('\n\n' + plainText, Word.InsertLocation.after);
+                return ctx.sync();
+            });
+        }
+        // Excel & PowerPoint: Common API — append after current content
+        return new Promise(function(resolve, reject) {
+            Office.context.document.getSelectedDataAsync(
+                Office.CoercionType.Text,
+                function(getResult) {
+                    var original = (getResult.status === Office.AsyncResultStatus.Succeeded) ? getResult.value : '';
+                    Office.context.document.setSelectedDataAsync(
+                        original + '\n\n' + plainText,
+                        { coercionType: Office.CoercionType.Text },
+                        function(setResult) {
+                            if (setResult.status === Office.AsyncResultStatus.Succeeded) resolve();
+                            else reject(new Error('Insertion \u00e9chou\u00e9e'));
+                        }
+                    );
+                }
+            );
         });
     },
 
     replaceSelection: function(text) {
-        return Word.run(function(ctx) {
-            var sel = ctx.document.getSelection();
-            sel.insertText(text, Word.InsertLocation.replace);
-            return ctx.sync();
+        // Word: use Word API with optional track changes
+        if (HostAPI.hostType === Office.HostType.Word) {
+            return HostAPI._withTrackChanges(function(ctx) {
+                var sel = ctx.document.getSelection();
+                sel.insertText(text, Word.InsertLocation.replace);
+                return ctx.sync();
+            });
+        }
+        // Excel & PowerPoint: Common API
+        return new Promise(function(resolve, reject) {
+            Office.context.document.setSelectedDataAsync(
+                text,
+                { coercionType: Office.CoercionType.Text },
+                function(result) {
+                    if (result.status === Office.AsyncResultStatus.Succeeded) resolve();
+                    else reject(new Error('Remplacement \u00e9chou\u00e9'));
+                }
+            );
         });
     },
 
     pollSelection: function() {
-        WordAPI.getSelectedText().then(function(text) {
+        HostAPI.getSelectedText().then(function(text) {
             if (text !== AppState.selectedText) {
                 AppState.selectedText = text;
                 UI.updateSelectionPreview();
@@ -852,9 +998,9 @@ var WordAPI = {
     },
 
     startPolling: function() {
-        WordAPI.stopPolling();
-        WordAPI.pollSelection();
-        AppState.pollingTimer = setInterval(function() { WordAPI.pollSelection(); }, CONFIG.selectionPollInterval);
+        HostAPI.stopPolling();
+        HostAPI.pollSelection();
+        AppState.pollingTimer = setInterval(function() { HostAPI.pollSelection(); }, CONFIG.selectionPollInterval);
     },
 
     stopPolling: function() {
@@ -1129,7 +1275,7 @@ var UI = {
             empty.style.cssText = 'text-align:center;padding:30px 16px;color:var(--text-muted)';
             empty.innerHTML = '<div style="font-size:28px;margin-bottom:8px">' + (AppState.currentItem ? AppState.currentItem.icon || '\u2728' : '\u2728') + '</div>'
                 + '<div style="font-size:12.5px;font-weight:600;margin-bottom:4px">' + UI.escapeHtml(AppState.currentItem ? AppState.currentItem.name : '') + '</div>'
-                + '<div style="font-size:11px">S\u00e9lectionnez du texte dans Word<br/>puis cliquez sur Envoyer</div>';
+                + '<div style="font-size:11px">S\u00e9lectionnez du texte dans ' + (AppState.hostName || 'le document') + '<br/>puis cliquez sur Envoyer</div>';
             box.appendChild(empty);
             return;
         }
@@ -1166,7 +1312,7 @@ var UI = {
 
         if (!AppState.selectedText || AppState.selectedText.trim() === '') {
             content.className = 'sel-empty';
-            content.textContent = 'S\u00e9lectionnez du texte dans Word...';
+            content.textContent = 'S\u00e9lectionnez du texte dans ' + (AppState.hostName || 'le document') + '...';
             stats.textContent = '';
         } else {
             content.className = 'sel-text';
@@ -1248,7 +1394,7 @@ var Handlers = {
         AppState.lastResponseHtml = '';
         AppState.lastResponsePlain = '';
         UI.showChatView(tool);
-        WordAPI.startPolling();
+        HostAPI.startPolling();
     },
 
     selectAssistant: function(assistant) {
@@ -1258,7 +1404,7 @@ var Handlers = {
         AppState.lastResponseHtml = '';
         AppState.lastResponsePlain = '';
         UI.showChatView(assistant);
-        WordAPI.startPolling();
+        HostAPI.startPolling();
     },
 
     goBack: function() {
@@ -1268,7 +1414,7 @@ var Handlers = {
         AppState.lastResponseHtml = '';
         AppState.lastResponsePlain = '';
         AppState.dynamicValues = {};
-        WordAPI.stopPolling();
+        HostAPI.stopPolling();
         UI.showGridView();
     },
 
@@ -1282,7 +1428,7 @@ var Handlers = {
 
     submit: function() {
         if (!AppState.currentItem || !AppState.selectedText || AppState.selectedText.trim() === '') {
-            UI.showToast('S\u00e9lectionnez du texte dans Word', 'error');
+            UI.showToast('S\u00e9lectionnez du texte dans ' + (AppState.hostName || 'le document'), 'error');
             return;
         }
         if (AppState.isLoading) return;
@@ -1311,15 +1457,19 @@ var Handlers = {
 
     doInsert: function() {
         if (!AppState.lastResponseHtml) { UI.showToast('Aucun r\u00e9sultat', 'error'); return; }
-        WordAPI.insertAfterSelection(AppState.lastResponseHtml).then(function() {
-            UI.showToast('Ins\u00e9r\u00e9 dans le document', 'success');
+        HostAPI.insertAfterSelection(AppState.lastResponseHtml).then(function() {
+            var msg = 'Ins\u00e9r\u00e9 dans le document';
+            if (AppState.useTrackChanges && HostAPI.hostType === Office.HostType.Word) msg += ' (r\u00e9vision)';
+            UI.showToast(msg, 'success');
         }).catch(function() { UI.showToast('Erreur d\u2019insertion', 'error'); });
     },
 
     doReplace: function() {
         if (!AppState.lastResponsePlain) { UI.showToast('Aucun r\u00e9sultat', 'error'); return; }
-        WordAPI.replaceSelection(AppState.lastResponsePlain).then(function() {
-            UI.showToast('S\u00e9lection remplac\u00e9e', 'success');
+        HostAPI.replaceSelection(AppState.lastResponsePlain).then(function() {
+            var msg = 'S\u00e9lection remplac\u00e9e';
+            if (AppState.useTrackChanges && HostAPI.hostType === Office.HostType.Word) msg += ' (r\u00e9vision)';
+            UI.showToast(msg, 'success');
         }).catch(function() { UI.showToast('Erreur de remplacement', 'error'); });
     },
 
@@ -1352,6 +1502,13 @@ var Handlers = {
         });
     },
 
+    toggleTrackChanges: function() {
+        AppState.useTrackChanges = !AppState.useTrackChanges;
+        var sw = document.getElementById('tcSwitch');
+        if (sw) sw.classList.toggle('active', AppState.useTrackChanges);
+        UI.showToast(AppState.useTrackChanges ? 'Mode Révision activé' : 'Mode Révision désactivé', 'success');
+    },
+
     regenerate: function() {
         if (AppState.messages.length < 2) return;
         var lastUser = null;
@@ -1377,8 +1534,31 @@ var Handlers = {
 
 // ── INITIALIZATION ─────────────────────────────────────────
 Office.onReady(function(info) {
-    if (info.host === Office.HostType.Word) {
+    var supportedHosts = [Office.HostType.Word, Office.HostType.Excel, Office.HostType.PowerPoint];
+    if (supportedHosts.indexOf(info.host) !== -1) {
+        HostAPI.hostType = info.host;
         UI.init();
+
+        // Hide "Paragraph" button if not in Word
+        if (info.host !== Office.HostType.Word) {
+            var btnP = document.getElementById('btnParagraph');
+            if (btnP) btnP.style.display = 'none';
+        }
+
+        // Show Track Changes toggle in Word only
+        if (info.host === Office.HostType.Word) {
+            var tcToggle = document.getElementById('tcToggle');
+            if (tcToggle) tcToggle.style.display = 'flex';
+            var tcSwitch = document.getElementById('tcSwitch');
+            if (tcSwitch) tcSwitch.classList.toggle('active', AppState.useTrackChanges);
+        }
+
+        // Update placeholder text based on host
+        var hostNames = {};
+        hostNames[Office.HostType.Word] = 'Word';
+        hostNames[Office.HostType.Excel] = 'Excel';
+        hostNames[Office.HostType.PowerPoint] = 'PowerPoint';
+        AppState.hostName = hostNames[info.host] || 'le document';
 
         document.getElementById('btnBack').onclick = Handlers.goBack;
         document.getElementById('btnClear').onclick = Handlers.clearChat;
