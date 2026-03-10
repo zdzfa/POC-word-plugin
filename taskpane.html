@@ -4,730 +4,511 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Audit IA Copilot</title>
+    <title>Assistant IA</title>
     <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js" type="text/javascript"></script>
     <style>
         /* ============================================
-           DESIGN SYSTEM — Fluent UI / Copilot Style
+           DESIGN SYSTEM — Fluent Enterprise
            ============================================ */
         :root {
-            --primary: #7B2FF2;
-            --primary-light: #EDE4FF;
-            --primary-dark: #5A1FBF;
-            --primary-bg: #F6F1FF;
-            --bg: #FAFAFA;
-            --surface: #FFFFFF;
-            --surface-hover: #F5F0FF;
-            --text: #242424;
-            --text-secondary: #616161;
-            --text-muted: #9E9E9E;
-            --border: #E0E0E0;
-            --border-light: #F0F0F0;
-            --success: #107C10;
+            --blue:       #0F6CBD;
+            --blue-dark:  #0A4D8C;
+            --blue-light: #E8F1FA;
+            --blue-bg:    #F0F6FC;
+            --accent:     #0E7A5B;
+            --accent-light:#E6F5F0;
+            --bg:         #F5F5F5;
+            --surface:    #FFFFFF;
+            --surface-hover:#F0F4F8;
+            --text:       #1B1B1B;
+            --text-sec:   #5C5C5C;
+            --text-muted: #999;
+            --border:     #E1E1E1;
+            --border-lt:  #EFEFEF;
+            --success:    #107C10;
             --success-bg: #DFF6DD;
-            --warning: #FFB900;
-            --warning-bg: #FFF4CE;
-            --error: #D13438;
-            --error-bg: #FDE7E9;
-            --info: #0078D4;
-            --info-bg: #D0E7F8;
-            --radius: 8px;
-            --radius-lg: 12px;
-            --radius-xl: 16px;
-            --shadow-sm: 0 1px 4px rgba(0,0,0,0.06);
-            --shadow: 0 2px 8px rgba(0,0,0,0.08);
-            --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
-            --transition: 0.2s ease;
-            --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            --warn:       #D48C00;
+            --warn-bg:    #FFF4CE;
+            --error:      #C4314B;
+            --error-bg:   #FDE7E9;
+            --r:          8px;
+            --r-lg:       12px;
+            --sh:         0 1px 4px rgba(0,0,0,.07);
+            --sh-lg:      0 4px 16px rgba(0,0,0,.10);
+            --tr:         .18s ease;
+            --font:       'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: var(--font);
-            background: var(--bg);
-            color: var(--text);
-            font-size: 13px;
-            line-height: 1.5;
-            height: 100vh;
-            overflow: hidden;
-        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:var(--font); background:var(--bg); color:var(--text); font-size:13px; line-height:1.5; height:100vh; overflow:hidden; }
 
         /* ---- App Shell ---- */
-        .app {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
+        .app { display:flex; flex-direction:column; height:100vh; }
 
+        /* ---- Header ---- */
         .header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            padding: 14px 16px;
+            background: linear-gradient(135deg, #0F6CBD 0%, #0A4D8C 60%, #073B6B 100%);
+            color: #fff;
+            padding: 12px 16px;
             flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
         }
-        .header-brand {
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .header::after {
+            content: '';
+            position: absolute;
+            top: -30px; right: -30px;
+            width: 90px; height: 90px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.06);
         }
-        .header-brand svg {
-            width: 22px;
-            height: 22px;
-            fill: white;
+        .header-row { display:flex; align-items:center; gap:10px; position:relative; z-index:1; }
+        .header-icon {
+            width:32px; height:32px; border-radius:8px;
+            background:rgba(255,255,255,.15);
+            display:flex; align-items:center; justify-content:center;
+            font-size:18px; flex-shrink:0;
         }
-        .header-title {
-            font-size: 15px;
-            font-weight: 600;
-            letter-spacing: 0.2px;
-        }
-        .header-sub {
-            font-size: 11px;
-            opacity: 0.85;
-            margin-top: 2px;
-        }
+        .header-title { font-size:15px; font-weight:700; letter-spacing:.2px; }
+        .header-sub { font-size:10.5px; opacity:.75; margin-top:1px; }
 
-        .main-content {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
+        /* ---- Tabs ---- */
+        .tabs {
+            display:flex; background:var(--surface);
+            border-bottom:1px solid var(--border);
+            flex-shrink:0; position:relative; z-index:2;
         }
-
-        /* ---- Assistant Grid ---- */
-        .view-grid { padding: 12px; }
-
-        .grid-title {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 10px;
-            padding: 0 2px;
+        .tab-btn {
+            flex:1; padding:10px 8px; text-align:center;
+            font-family:var(--font); font-size:12.5px; font-weight:600;
+            background:none; border:none; border-bottom:2.5px solid transparent;
+            color:var(--text-sec); cursor:pointer;
+            transition: all var(--tr);
         }
+        .tab-btn:hover { color:var(--text); background:var(--blue-bg); }
+        .tab-btn.active { color:var(--blue); border-bottom-color:var(--blue); }
 
-        .assistants-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
+        /* ---- Main scrollable ---- */
+        .main-content { flex:1; overflow-y:auto; overflow-x:hidden; }
+
+        /* ---- Tab panels ---- */
+        .tab-panel { display:none; }
+        .tab-panel.active { display:block; }
+
+        /* ---- Tools Grid ---- */
+        .tools-section { padding:10px 14px 4px; }
+        .section-label {
+            font-size:10.5px; font-weight:700; text-transform:uppercase;
+            letter-spacing:.8px; color:var(--text-muted); margin-bottom:8px;
         }
+        .tools-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:12px; }
 
+        .tool-card {
+            background:var(--surface); border:1px solid var(--border);
+            border-radius:var(--r); padding:10px 10px 8px; cursor:pointer;
+            transition:all var(--tr); display:flex; flex-direction:column; gap:3px;
+            position:relative; overflow:hidden;
+        }
+        .tool-card::before {
+            content:''; position:absolute; top:0; left:0;
+            width:3px; height:100%; border-radius:0 2px 2px 0;
+            background:var(--card-accent, var(--blue));
+            opacity:0; transition:opacity var(--tr);
+        }
+        .tool-card:hover { border-color:var(--blue); background:var(--surface-hover); transform:translateY(-1px); box-shadow:var(--sh); }
+        .tool-card:hover::before { opacity:1; }
+        .tool-card .tc-icon { font-size:18px; margin-bottom:2px; }
+        .tool-card .tc-name { font-size:11.5px; font-weight:600; color:var(--text); line-height:1.25; }
+        .tool-card .tc-desc { font-size:10px; color:var(--text-muted); line-height:1.3; }
+
+        /* Full-width tool card */
+        .tool-card.full { grid-column: 1 / -1; flex-direction:row; align-items:center; gap:10px; padding:10px 12px; }
+        .tool-card.full .tc-icon { font-size:20px; margin-bottom:0; }
+        .tool-card.full .tc-text { flex:1; }
+
+        /* ---- Assistants Grid ---- */
+        .assistants-section { padding:10px 14px; }
+        .assistants-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:10px; }
         .assistant-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 10px;
-            cursor: pointer;
-            transition: all var(--transition);
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
+            background:var(--surface); border:1px solid var(--border);
+            border-radius:var(--r); padding:10px; cursor:pointer;
+            transition:all var(--tr); display:flex; flex-direction:column; gap:4px;
         }
-        .assistant-card:hover {
-            border-color: var(--primary);
-            background: var(--surface-hover);
-            box-shadow: var(--shadow-sm);
-            transform: translateY(-1px);
+        .assistant-card:hover { border-color:var(--blue); background:var(--surface-hover); transform:translateY(-1px); box-shadow:var(--sh); }
+        .assistant-card .ac-icon {
+            width:34px; height:34px; border-radius:var(--r);
+            display:flex; align-items:center; justify-content:center;
+            font-size:18px; flex-shrink:0;
         }
-        .assistant-card .card-icon {
-            font-size: 20px;
-            width: 36px;
-            height: 36px;
-            border-radius: var(--radius);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        .assistant-card .card-name {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text);
-            line-height: 1.3;
-        }
-        .assistant-card .card-desc {
-            font-size: 10.5px;
-            color: var(--text-muted);
-            line-height: 1.3;
+        .assistant-card .ac-name { font-size:11.5px; font-weight:600; color:var(--text); line-height:1.25; }
+        .assistant-card .ac-desc { font-size:10px; color:var(--text-muted); line-height:1.3; }
+
+        .empty-assistants {
+            text-align:center; padding:24px 12px; color:var(--text-muted);
+            font-size:12px; font-style:italic;
         }
 
         /* ---- Chat View ---- */
-        .view-chat { display: none; flex-direction: column; height: 100%; }
-        .view-chat.active { display: flex; }
+        .view-chat { display:none; flex-direction:column; height:100%; }
+        .view-chat.active { display:flex; }
 
         .chat-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 14px;
-            border-bottom: 1px solid var(--border-light);
-            background: var(--surface);
-            flex-shrink: 0;
+            display:flex; align-items:center; gap:8px;
+            padding:8px 12px; border-bottom:1px solid var(--border-lt);
+            background:var(--surface); flex-shrink:0;
         }
         .chat-back {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 4px;
-            border-radius: 4px;
-            color: var(--text-secondary);
-            font-size: 16px;
-            display: flex;
-            align-items: center;
+            background:none; border:none; cursor:pointer; padding:5px;
+            border-radius:4px; color:var(--text-sec); font-size:18px;
+            display:flex; align-items:center; transition:background var(--tr);
         }
-        .chat-back:hover { background: var(--border-light); }
-        .chat-assistant-info {
-            flex: 1;
-            min-width: 0;
+        .chat-back:hover { background:var(--border-lt); }
+        .chat-info { flex:1; min-width:0; }
+        .chat-name { font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px; }
+        .chat-desc { font-size:10.5px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .chat-actions-top { display:flex; gap:4px; }
+        .chat-top-btn {
+            background:none; border:1px solid var(--border); border-radius:6px;
+            padding:4px 8px; font-size:10.5px; color:var(--text-sec);
+            cursor:pointer; font-family:var(--font); white-space:nowrap;
+            transition:all var(--tr);
         }
-        .chat-assistant-name {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .chat-assistant-desc {
-            font-size: 11px;
-            color: var(--text-muted);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .chat-clear-btn {
-            background: none;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 4px 10px;
-            font-size: 11px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            white-space: nowrap;
-            font-family: var(--font);
-        }
-        .chat-clear-btn:hover {
-            background: var(--border-light);
-            border-color: var(--text-muted);
-        }
+        .chat-top-btn:hover { background:var(--border-lt); border-color:var(--text-muted); }
 
-        /* Messages area */
+        /* Messages */
         .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 12px 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+            flex:1; overflow-y:auto; padding:10px 12px;
+            display:flex; flex-direction:column; gap:10px;
+        }
+        .message { max-width:95%; animation:slideUp .22s ease; }
+        @keyframes slideUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+        .msg-user { align-self:flex-end; }
+        .msg-user .bubble {
+            background:var(--blue); color:#fff;
+            border-radius:var(--r-lg) var(--r-lg) 4px var(--r-lg);
+            padding:10px 12px; font-size:12px;
+        }
+        .msg-user .bubble .msg-label { font-size:9.5px; opacity:.75; margin-bottom:3px; font-weight:600; }
+        .msg-user .bubble .msg-sel-preview {
+            background:rgba(255,255,255,.12); padding:5px 8px;
+            border-radius:6px; font-size:11px; margin:3px 0;
+            max-height:60px; overflow:hidden; line-height:1.35;
+        }
+        .msg-user .bubble .msg-instr { margin-top:5px; font-style:italic; opacity:.85; font-size:11.5px; }
+
+        .msg-ai { align-self:flex-start; }
+        .msg-ai .bubble {
+            background:var(--surface); border:1px solid var(--border);
+            border-radius:4px var(--r-lg) var(--r-lg) var(--r-lg);
+            padding:12px; font-size:12px;
         }
 
-        .message {
-            max-width: 95%;
-            animation: slideIn 0.25s ease;
-        }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        /* AI result formatting */
+        .result-content { line-height:1.6; }
+        .result-content h3 { font-size:12.5px; margin:8px 0 4px; color:var(--blue-dark); }
+        .result-content h3:first-child { margin-top:0; }
+        .result-content p { margin:3px 0; }
+        .result-content ul,.result-content ol { padding-left:16px; margin:3px 0; }
+        .result-content li { margin:2px 0; }
+        .result-content table { width:100%; border-collapse:collapse; margin:6px 0; font-size:11px; }
+        .result-content table th { background:var(--blue-light); color:var(--blue-dark); font-weight:600; text-align:left; padding:5px 7px; border:1px solid var(--border); }
+        .result-content table td { padding:4px 7px; border:1px solid var(--border); }
+        .result-content table tr:nth-child(even) td { background:#FAFBFC; }
 
-        .message-user {
-            align-self: flex-end;
-        }
-        .message-user .bubble {
-            background: var(--primary);
-            color: white;
-            border-radius: var(--radius-lg) var(--radius-lg) 4px var(--radius-lg);
-            padding: 10px 14px;
-            font-size: 12.5px;
-        }
-        .message-user .bubble .msg-label {
-            font-size: 10px;
-            opacity: 0.8;
-            margin-bottom: 4px;
-            font-weight: 600;
-        }
-        .message-user .bubble .msg-selection {
-            background: rgba(255,255,255,0.15);
-            padding: 6px 8px;
-            border-radius: 6px;
-            font-size: 11.5px;
-            margin: 4px 0;
-            max-height: 80px;
-            overflow: hidden;
-            line-height: 1.4;
-        }
-        .message-user .bubble .msg-instructions {
-            margin-top: 6px;
-            font-style: italic;
-            opacity: 0.9;
-        }
+        .diff-del { background:#FECDD3; color:#9F1239; text-decoration:line-through; padding:1px 3px; border-radius:3px; }
+        .diff-ins { background:#BBF7D0; color:#166534; padding:1px 3px; border-radius:3px; font-weight:500; }
 
-        .message-ai {
-            align-self: flex-start;
-        }
-        .message-ai .bubble {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 4px var(--radius-lg) var(--radius-lg) var(--radius-lg);
-            padding: 12px 14px;
-            font-size: 12.5px;
-        }
+        .section-block { border:1px solid var(--border); border-radius:var(--r); margin:6px 0; overflow:hidden; }
+        .section-header { display:flex; align-items:center; justify-content:space-between; padding:7px 10px; background:#F8F9FA; cursor:pointer; font-weight:600; font-size:11.5px; gap:6px; }
+        .section-header:hover { background:#F0F1F3; }
+        .section-header .badge { font-size:9.5px; padding:2px 7px; border-radius:10px; font-weight:600; color:#fff; }
+        .badge-critical { background:var(--error); }
+        .badge-major { background:#E97025; }
+        .badge-moderate { background:var(--warn); color:#333; }
+        .badge-minor { background:var(--blue); }
+        .badge-ok { background:var(--success); }
+        .section-body { padding:7px 10px; font-size:11.5px; border-top:1px solid var(--border); }
 
-        /* AI result content formatting */
-        .result-content { line-height: 1.6; }
-        .result-content h3 {
-            font-size: 13px;
-            margin: 10px 0 6px;
-            color: var(--primary-dark);
-        }
-        .result-content h3:first-child { margin-top: 0; }
-        .result-content p { margin: 4px 0; }
-        .result-content ul, .result-content ol {
-            padding-left: 18px;
-            margin: 4px 0;
-        }
-        .result-content li { margin: 2px 0; }
-        .result-content table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 8px 0;
-            font-size: 11.5px;
-        }
-        .result-content table th {
-            background: var(--primary-light);
-            color: var(--primary-dark);
-            font-weight: 600;
-            text-align: left;
-            padding: 6px 8px;
-            border: 1px solid var(--border);
-        }
-        .result-content table td {
-            padding: 5px 8px;
-            border: 1px solid var(--border);
-        }
-        .result-content table tr:nth-child(even) td {
-            background: #FAFAFA;
-        }
+        .exec-summary { background:var(--blue-bg); border:1px solid #C5D9ED; border-radius:var(--r); padding:10px 12px; margin-bottom:8px; }
+        .exec-summary-title { font-weight:700; font-size:12px; color:var(--blue-dark); margin-bottom:3px; }
 
-        /* Diff formatting */
-        .diff-del {
-            background: #FECDD3;
-            color: #9F1239;
-            text-decoration: line-through;
-            padding: 1px 3px;
-            border-radius: 3px;
-        }
-        .diff-ins {
-            background: #BBF7D0;
-            color: #166534;
-            padding: 1px 3px;
-            border-radius: 3px;
-            font-weight: 500;
-        }
+        .report-meta { background:#F5F6F7; border-radius:var(--r); padding:8px 10px; margin-bottom:8px; font-size:11px; }
+        .report-meta-row { display:flex; gap:6px; padding:1.5px 0; }
+        .report-meta-label { font-weight:600; color:var(--text-sec); min-width:70px; }
 
-        /* Structured sections */
-        .section-block {
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            margin: 8px 0;
-            overflow: hidden;
-        }
-        .section-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 10px;
-            background: #F8F8F8;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 12px;
-            gap: 6px;
-        }
-        .section-header:hover { background: #F0F0F0; }
-        .section-header .badge {
-            font-size: 10px;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-weight: 600;
-            color: white;
-        }
-        .badge-critical { background: var(--error); }
-        .badge-major { background: #E97025; }
-        .badge-moderate { background: var(--warning); color: #333; }
-        .badge-minor { background: var(--info); }
-        .badge-ok { background: var(--success); }
-        .section-body {
-            padding: 8px 10px;
-            font-size: 12px;
-            border-top: 1px solid var(--border);
-        }
+        .annotation-block { border-left:3px solid var(--blue); background:var(--blue-bg); padding:7px 10px; margin:5px 0; border-radius:0 var(--r) var(--r) 0; font-size:11.5px; }
+        .annotation-block.improved { border-left-color:var(--success); background:var(--success-bg); }
+        .annotation-label { font-weight:600; font-size:10.5px; text-transform:uppercase; margin-bottom:2px; }
 
-        /* Summary box */
-        .exec-summary {
-            background: var(--primary-bg);
-            border: 1px solid #D4C4F0;
-            border-radius: var(--radius);
-            padding: 10px 12px;
-            margin-bottom: 10px;
-        }
-        .exec-summary-title {
-            font-weight: 700;
-            font-size: 12px;
-            color: var(--primary-dark);
-            margin-bottom: 4px;
-        }
+        .score-display { display:inline-flex; align-items:center; gap:6px; font-size:20px; font-weight:700; color:var(--blue); margin:4px 0; }
+        .score-display .score-label { font-size:11.5px; font-weight:400; color:var(--text-sec); }
 
-        /* Report layout */
-        .report-meta {
-            background: #F5F5F5;
-            border-radius: var(--radius);
-            padding: 8px 10px;
-            margin-bottom: 10px;
-            font-size: 11.5px;
+        /* Message action bar */
+        .msg-actions {
+            display:flex; flex-wrap:wrap; gap:4px; margin-top:7px;
+            padding-top:7px; border-top:1px solid var(--border-lt);
         }
-        .report-meta-row {
-            display: flex;
-            gap: 6px;
-            padding: 2px 0;
+        .ma-btn {
+            background:var(--bg); border:1px solid var(--border); border-radius:6px;
+            padding:3px 9px; font-size:10.5px; font-family:var(--font); cursor:pointer;
+            color:var(--text-sec); display:flex; align-items:center; gap:3px;
+            transition:all var(--tr);
         }
-        .report-meta-label {
-            font-weight: 600;
-            color: var(--text-secondary);
-            min-width: 70px;
-        }
-
-        /* Annotation blocks */
-        .annotation-block {
-            border-left: 3px solid var(--info);
-            background: var(--info-bg);
-            padding: 8px 10px;
-            margin: 6px 0;
-            border-radius: 0 var(--radius) var(--radius) 0;
-            font-size: 12px;
-        }
-        .annotation-block.improved {
-            border-left-color: var(--success);
-            background: var(--success-bg);
-        }
-        .annotation-label {
-            font-weight: 600;
-            font-size: 11px;
-            text-transform: uppercase;
-            margin-bottom: 3px;
-        }
-
-        /* Score display */
-        .score-display {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--primary);
-            margin: 6px 0;
-        }
-        .score-display .score-label {
-            font-size: 12px;
-            font-weight: 400;
-            color: var(--text-secondary);
-        }
-
-        /* Message actions */
-        .message-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px solid var(--border-light);
-        }
-        .msg-action-btn {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 4px 10px;
-            font-size: 11px;
-            font-family: var(--font);
-            cursor: pointer;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            transition: all var(--transition);
-        }
-        .msg-action-btn:hover {
-            background: var(--primary-light);
-            border-color: var(--primary);
-            color: var(--primary-dark);
-        }
+        .ma-btn:hover { background:var(--blue-light); border-color:var(--blue); color:var(--blue-dark); }
 
         /* Loading dots */
-        .loading-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 14px;
-            color: var(--text-muted);
-            font-size: 12px;
-        }
-        .loading-dots {
-            display: flex;
-            gap: 4px;
-        }
-        .loading-dots span {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--primary);
-            animation: dotPulse 1.4s infinite ease-in-out;
-        }
-        .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
-        .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes dotPulse {
-            0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
-            40% { opacity: 1; transform: scale(1); }
-        }
+        .loading-wrap { display:flex; align-items:center; gap:8px; padding:10px 12px; color:var(--text-muted); font-size:11.5px; }
+        .dots { display:flex; gap:4px; }
+        .dots span { width:6px; height:6px; border-radius:50%; background:var(--blue); animation:pulse 1.4s infinite ease-in-out; }
+        .dots span:nth-child(2){animation-delay:.2s} .dots span:nth-child(3){animation-delay:.4s}
+        @keyframes pulse { 0%,80%,100%{opacity:.25;transform:scale(.8)} 40%{opacity:1;transform:scale(1)} }
 
         /* ---- Input Area ---- */
         .input-area {
-            border-top: 1px solid var(--border);
-            background: var(--surface);
-            padding: 10px 14px 12px;
-            flex-shrink: 0;
-            display: none;
+            border-top:1px solid var(--border); background:var(--surface);
+            padding:8px 12px 10px; flex-shrink:0; display:none;
         }
-        .input-area.active { display: block; }
+        .input-area.active { display:block; }
 
-        .selection-preview {
-            background: var(--bg);
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius);
-            padding: 8px 10px;
-            margin-bottom: 8px;
-            font-size: 11px;
+        .sel-preview {
+            background:var(--bg); border:1px solid var(--border-lt);
+            border-radius:var(--r); padding:7px 10px; margin-bottom:7px; font-size:11px;
         }
-        .selection-preview-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 4px;
-        }
-        .selection-preview-label {
-            font-weight: 600;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .selection-stats {
-            color: var(--text-muted);
-            font-size: 10px;
-        }
-        .selection-text {
-            color: var(--text);
-            line-height: 1.4;
-            max-height: 50px;
-            overflow: hidden;
-            position: relative;
-        }
-        .selection-text::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 20px;
-            background: linear-gradient(transparent, var(--bg));
-        }
-        .selection-empty {
-            color: var(--text-muted);
-            font-style: italic;
-        }
+        .sel-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:3px; }
+        .sel-label { font-weight:600; color:var(--text-sec); display:flex; align-items:center; gap:4px; }
+        .sel-stats { color:var(--text-muted); font-size:9.5px; }
+        .sel-text { color:var(--text); line-height:1.35; max-height:44px; overflow:hidden; position:relative; font-size:11px; }
+        .sel-text::after { content:''; position:absolute; bottom:0; left:0; right:0; height:18px; background:linear-gradient(transparent,var(--bg)); }
+        .sel-empty { color:var(--text-muted); font-style:italic; }
 
-        .input-row {
-            display: flex;
-            gap: 6px;
-            align-items: flex-end;
+        .sel-toolbar { display:flex; gap:4px; margin-bottom:7px; }
+        .sel-tb-btn {
+            background:var(--blue-bg); border:1px solid #C5D9ED; border-radius:6px;
+            padding:4px 10px; font-size:10.5px; font-family:var(--font);
+            color:var(--blue); cursor:pointer; font-weight:500;
+            display:flex; align-items:center; gap:4px;
+            transition:all var(--tr);
         }
-        .input-wrapper {
-            flex: 1;
-            position: relative;
+        .sel-tb-btn:hover { background:var(--blue-light); border-color:var(--blue); }
+
+        /* Language selector (for translate) */
+        .lang-row { display:flex; gap:6px; margin-bottom:7px; align-items:center; }
+        .lang-row select {
+            flex:1; padding:6px 8px; border:1px solid var(--border); border-radius:var(--r);
+            font-family:var(--font); font-size:12px; color:var(--text); background:var(--surface);
         }
-        .input-wrapper textarea {
-            width: 100%;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 8px 10px;
-            font-family: var(--font);
-            font-size: 12.5px;
-            resize: none;
-            line-height: 1.4;
-            min-height: 36px;
-            max-height: 80px;
-            color: var(--text);
-            transition: border-color var(--transition);
+        .lang-row select:focus { outline:none; border-color:var(--blue); }
+        .lang-row label { font-size:11px; font-weight:600; color:var(--text-sec); white-space:nowrap; }
+
+        /* Tone selector (for reformulate) */
+        .tone-chips { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:7px; }
+        .tone-chip {
+            padding:4px 10px; border:1px solid var(--border); border-radius:16px;
+            font-size:10.5px; font-family:var(--font); cursor:pointer;
+            color:var(--text-sec); background:var(--surface);
+            transition:all var(--tr);
         }
-        .input-wrapper textarea::placeholder {
-            color: var(--text-muted);
+        .tone-chip:hover { border-color:var(--blue); color:var(--blue); }
+        .tone-chip.active { background:var(--blue); color:#fff; border-color:var(--blue); }
+
+        .input-row { display:flex; gap:6px; align-items:flex-end; }
+        .input-wrap { flex:1; position:relative; }
+        .input-wrap textarea {
+            width:100%; border:1px solid var(--border); border-radius:var(--r);
+            padding:7px 10px; font-family:var(--font); font-size:12px;
+            resize:none; line-height:1.4; min-height:34px; max-height:80px;
+            color:var(--text); transition:border-color var(--tr);
         }
-        .input-wrapper textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(123,47,242,0.12);
-        }
+        .input-wrap textarea::placeholder { color:var(--text-muted); }
+        .input-wrap textarea:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 2px rgba(15,108,189,.1); }
         .send-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: var(--radius);
-            border: none;
-            background: var(--primary);
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            transition: background var(--transition);
+            width:34px; height:34px; border-radius:var(--r); border:none;
+            background:var(--blue); color:#fff; cursor:pointer;
+            display:flex; align-items:center; justify-content:center;
+            flex-shrink:0; transition:background var(--tr);
         }
-        .send-btn:hover { background: var(--primary-dark); }
-        .send-btn:disabled {
-            background: var(--border);
-            cursor: default;
-        }
-        .send-btn svg { width: 18px; height: 18px; fill: currentColor; }
+        .send-btn:hover { background:var(--blue-dark); }
+        .send-btn:disabled { background:var(--border); cursor:default; }
+        .send-btn svg { width:16px; height:16px; fill:currentColor; }
 
         /* ---- Toast ---- */
-        .toast-container {
-            position: fixed;
-            top: 12px;
-            left: 12px;
-            right: 12px;
-            z-index: 1000;
-            pointer-events: none;
-        }
+        .toast-box { position:fixed; top:10px; left:10px; right:10px; z-index:1000; pointer-events:none; }
         .toast {
-            background: #333;
-            color: white;
-            padding: 8px 14px;
-            border-radius: var(--radius);
-            font-size: 12px;
-            margin-bottom: 6px;
-            animation: toastIn 0.25s ease, toastOut 0.3s ease 2.5s forwards;
-            pointer-events: auto;
-            box-shadow: var(--shadow-lg);
+            background:#333; color:#fff; padding:7px 12px; border-radius:var(--r);
+            font-size:11.5px; margin-bottom:5px; pointer-events:auto;
+            animation:tIn .22s ease, tOut .3s ease 2.5s forwards; box-shadow:var(--sh-lg);
         }
-        .toast.toast-success { background: var(--success); }
-        .toast.toast-error { background: var(--error); }
-        @keyframes toastIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes toastOut {
-            from { opacity: 1; }
-            to { opacity: 0; transform: translateY(-10px); }
-        }
+        .toast-success { background:var(--success); }
+        .toast-error { background:var(--error); }
+        @keyframes tIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes tOut { from{opacity:1} to{opacity:0;transform:translateY(-8px)} }
 
         /* ---- Scrollbar ---- */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #CCC; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #AAA; }
+        ::-webkit-scrollbar { width:5px; }
+        ::-webkit-scrollbar-track { background:transparent; }
+        ::-webkit-scrollbar-thumb { background:#CCC; border-radius:4px; }
+        ::-webkit-scrollbar-thumb:hover { background:#AAA; }
 
-        /* ---- Mode Toggle ---- */
+        .hidden { display:none !important; }
+
+        /* ---- Mode Toggle (Demo / IA Locale) ---- */
         .mode-toggle {
-            display: flex;
-            gap: 2px;
-            margin-top: 8px;
-            background: rgba(255,255,255,0.15);
-            border-radius: 6px;
-            padding: 2px;
-            align-self: flex-start;
+            display:flex; gap:2px; margin-top:8px;
+            background:rgba(255,255,255,.15); border-radius:6px;
+            padding:2px; align-self:flex-start; position:relative; z-index:1;
         }
         .mode-btn {
-            background: none;
-            border: none;
-            color: rgba(255,255,255,0.7);
-            font-size: 11px;
-            font-family: var(--font);
-            padding: 3px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 4px;
+            background:none; border:none;
+            color:rgba(255,255,255,.65); font-size:11px;
+            font-family:var(--font); padding:3px 10px;
+            border-radius:4px; cursor:pointer;
+            transition:all .2s; display:flex;
+            align-items:center; gap:4px;
         }
-        .mode-btn.active {
-            background: rgba(255,255,255,0.25);
-            color: white;
-            font-weight: 600;
-        }
-        .mode-btn:hover:not(.active) { color: white; }
+        .mode-btn.active { background:rgba(255,255,255,.22); color:#fff; font-weight:600; }
+        .mode-btn:hover:not(.active) { color:#fff; }
         .status-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            display: inline-block;
+            width:7px; height:7px; border-radius:50%; display:inline-block;
         }
-        .status-dot.connected { background: #4ADE80; }
-        .status-dot.disconnected { background: #F87171; }
-        .status-dot.checking { background: #FBBF24; animation: dotPulse 1s infinite; }
+        .status-dot.ok { background:#4ADE80; }
+        .status-dot.ko { background:#F87171; }
+        .status-dot.wait { background:#FBBF24; animation:pulse 1s infinite; }
 
-        /* ---- Utility ---- */
-        .hidden { display: none !important; }
+        /* Track Changes toggle */
+        .tc-toggle {
+            display:flex; align-items:center; gap:6px;
+            padding:5px 0; margin-bottom:5px; font-size:11px;
+        }
+        .tc-toggle label { color:var(--text-sec); cursor:pointer; user-select:none; display:flex; align-items:center; gap:6px; }
+        .tc-switch {
+            position:relative; width:32px; height:18px;
+            background:var(--border); border-radius:9px;
+            cursor:pointer; transition:background var(--tr); flex-shrink:0;
+        }
+        .tc-switch::after {
+            content:''; position:absolute; top:2px; left:2px;
+            width:14px; height:14px; border-radius:50%;
+            background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.2);
+            transition:transform var(--tr);
+        }
+        .tc-switch.active { background:var(--blue); }
+        .tc-switch.active::after { transform:translateX(14px); }
+
+        /* ---- Options dropdown inline ---- */
+        .options-bar { display:flex; gap:4px; margin-bottom:7px; flex-wrap:wrap; }
+        .opt-chip {
+            padding:4px 10px; border:1px solid var(--border); border-radius:16px;
+            font-size:10.5px; font-family:var(--font); cursor:pointer;
+            color:var(--text-sec); background:var(--surface); transition:all var(--tr);
+        }
+        .opt-chip:hover { border-color:var(--blue); color:var(--blue); }
+        .opt-chip.active { background:var(--blue); color:#fff; border-color:var(--blue); }
     </style>
 </head>
 <body>
 
 <div class="app">
-    <!-- Header -->
+    <!-- ======== HEADER ======== -->
     <div class="header">
-        <div class="header-brand">
-            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+        <div class="header-row">
+            <div class="header-icon">&#9889;</div>
             <div>
-                <div class="header-title">Audit IA Copilot</div>
-                <div class="header-sub">Assistants IA pour l'audit interne</div>
+                <div class="header-title">Assistant IA</div>
+                <div class="header-sub">Outils IA &amp; Assistants m&eacute;tiers</div>
             </div>
         </div>
         <div class="mode-toggle">
             <button class="mode-btn active" id="btnModeDemo" onclick="Handlers.setMode('mock')">Demo</button>
-            <button class="mode-btn" id="btnModeLocal" onclick="Handlers.setMode('local')">IA Locale <span class="status-dot disconnected" id="localStatusDot"></span></button>
+            <button class="mode-btn" id="btnModeLocal" onclick="Handlers.setMode('local')">IA Locale <span class="status-dot ko" id="localDot"></span></button>
         </div>
     </div>
 
-    <!-- Main scrollable content -->
-    <div class="main-content">
-        <!-- Grid View (assistants selection) -->
-        <div id="viewGrid" class="view-grid">
-            <div class="grid-title">Choisissez un assistant</div>
-            <div id="assistantsGrid" class="assistants-grid"></div>
+    <!-- ======== TABS ======== -->
+    <div class="tabs" id="tabBar">
+        <button class="tab-btn active" data-tab="tools">&#9874;&#65039; Outils</button>
+        <button class="tab-btn" data-tab="assistants">&#129302; Assistants</button>
+    </div>
+
+    <!-- ======== MAIN CONTENT ======== -->
+    <div class="main-content" id="mainContent">
+
+        <!-- ──── TOOLS TAB ──── -->
+        <div id="panelTools" class="tab-panel active">
+
+            <div class="tools-section">
+                <div class="section-label">R&eacute;daction &amp; Langue</div>
+                <div class="tools-grid" id="gridRedaction"></div>
+            </div>
+
+            <div class="tools-section">
+                <div class="section-label">Analyse &amp; Extraction</div>
+                <div class="tools-grid" id="gridAnalyse"></div>
+            </div>
+
+            <div class="tools-section">
+                <div class="section-label">Mise en forme</div>
+                <div class="tools-grid" id="gridForme"></div>
+            </div>
+
+            <div class="tools-section">
+                <div class="section-label">G&eacute;n&eacute;ration</div>
+                <div class="tools-grid" id="gridGeneration"></div>
+            </div>
+
         </div>
 
-        <!-- Chat View -->
+        <!-- ──── ASSISTANTS TAB ──── -->
+        <div id="panelAssistants" class="tab-panel">
+            <div class="assistants-section" id="assistantsContainer"></div>
+        </div>
+
+        <!-- ──── CHAT VIEW ──── -->
         <div id="viewChat" class="view-chat">
             <div class="chat-header">
                 <button class="chat-back" id="btnBack" title="Retour">&#8592;</button>
-                <div class="chat-assistant-info">
-                    <div class="chat-assistant-name" id="chatAssistantName"></div>
-                    <div class="chat-assistant-desc" id="chatAssistantDesc"></div>
+                <div class="chat-info">
+                    <div class="chat-name" id="chatName"></div>
+                    <div class="chat-desc" id="chatDesc"></div>
                 </div>
-                <button class="chat-clear-btn" id="btnClear">Nouveau</button>
+                <div class="chat-actions-top">
+                    <button class="chat-top-btn" id="btnClear">Nouveau</button>
+                </div>
             </div>
             <div class="chat-messages" id="chatMessages"></div>
         </div>
     </div>
 
-    <!-- Input Area (visible in chat view) -->
+    <!-- ======== INPUT AREA ======== -->
     <div id="inputArea" class="input-area">
-        <div class="selection-preview" id="selectionPreview">
-            <div class="selection-preview-header">
-                <span class="selection-preview-label">&#128196; Texte s&eacute;lectionn&eacute;</span>
-                <span class="selection-stats" id="selectionStats"></span>
+        <!-- Selection preview -->
+        <div class="sel-preview" id="selPreview">
+            <div class="sel-header">
+                <span class="sel-label">&#128196; Texte s&eacute;lectionn&eacute;</span>
+                <span class="sel-stats" id="selStats"></span>
             </div>
-            <div id="selectionContent" class="selection-empty">
-                S&eacute;lectionnez du texte dans Word...
-            </div>
+            <div id="selContent" class="sel-empty">S&eacute;lectionnez du texte dans le document...</div>
         </div>
+
+        <!-- Toolbar: select all, select paragraph -->
+        <div class="sel-toolbar" id="selToolbar">
+            <button class="sel-tb-btn" onclick="HostAPI.selectAll()" title="S&eacute;lectionner tout le contenu">&#128462; Tout s&eacute;lectionner</button>
+            <button class="sel-tb-btn" id="btnParagraph" onclick="HostAPI.selectCurrentParagraph()" title="S&eacute;lectionner le paragraphe actuel">&#182; Paragraphe</button>
+        </div>
+
+        <!-- Track Changes toggle (Word only) -->
+        <div class="tc-toggle" id="tcToggle" style="display:none">
+            <label onclick="Handlers.toggleTrackChanges()">
+                <span class="tc-switch" id="tcSwitch"></span>
+                <span>&#128221; Mode R&eacute;vision</span>
+            </label>
+        </div>
+
+        <!-- Dynamic options (language, tone, etc.) -->
+        <div id="dynamicOptions"></div>
+
+        <!-- Text input -->
         <div class="input-row">
-            <div class="input-wrapper">
+            <div class="input-wrap">
                 <textarea id="inputText" placeholder="Instructions suppl&eacute;mentaires (optionnel)..." rows="1"></textarea>
             </div>
             <button class="send-btn" id="btnSend" title="Envoyer" disabled>
@@ -738,243 +519,556 @@
 </div>
 
 <!-- Toast container -->
-<div class="toast-container" id="toastContainer"></div>
+<div class="toast-box" id="toastBox"></div>
 
 <script>
 /* =============================================================
-   AUDIT IA COPILOT — Application JavaScript
+   ASSISTANT IA — Configuration & Données
+   =============================================================
+   POUR AJOUTER UN OUTIL OU ASSISTANT :
+   1. Ajoutez-le dans TOOLS ou ASSISTANT_GROUPS ci-dessous
+   2. Ajoutez son prompt dans PROMPTS
+   3. C'est tout ! L'interface se met à jour automatiquement.
    ============================================================= */
 
-// ── CONFIG ──────────────────────────────────────────────────
+// ── CONFIGURATION API ──────────────────────────────────────
 var CONFIG = {
-    mode: 'mock',  // 'mock' ou 'local'
-    localEndpoint: 'http://127.0.0.1:5000/v1/chat/completions',
-    localModelsEndpoint: 'http://127.0.0.1:5000/v1/models',
-    model: 'local-model',
-    maxTokens: 4000,
+    // Mode actif : 'mock' (demo) ou 'local' (IA locale)
+    mode: 'mock',
+
+    // === IA LOCALE (text-generation-webui avec --api) ===
+    localEndpoint:  'http://127.0.0.1:5000/v1/chat/completions',
+    localHealthUrl: 'http://127.0.0.1:5000/v1/models',
+    model:       'local-model',
+    maxTokens:   4000,
     temperature: 0.3,
-    selectionPollInterval: 1500,
-    dialogUrl: 'https://zdzfa.github.io/POC-word-plugin/result-dialog.html',
-    mockDelay: 1800
+
+    // === API ENTREPRISE (à remplir par l'équipe IT) ===
+    apiEndpoint: 'https://VOTRE-SERVEUR-IA.entreprise.local/v1/chat/completions',
+    apiKey:      '',   // Vide = pas de header Authorization
+
+    // Polling sélection Word (ms)
+    selectionPollInterval: 1200,
+
+    // URL du dialogue résultat (fenêtre séparée) — doit être une URL absolue
+    dialogUrl: 'https://zdzfa.github.io/POC-word-plugin/result-dialog',
+
+    // Délai simulation en mode mock (ms)
+    mockDelay: 1500
 };
 
-// ── ASSISTANTS ──────────────────────────────────────────────
-var ASSISTANTS = [
-    { id: 'analyse', name: 'Analyse de documents', icon: '\uD83D\uDD0D', description: 'Risques, points d\'attention, questions', color: '#0078D4', resultTemplate: 'structured' },
-    { id: 'correction', name: 'Correction', icon: '\u270F\uFE0F', description: 'Orthographe, grammaire, typographie', color: '#107C10', resultTemplate: 'diff' },
-    { id: 'relecture_forme', name: 'Relecture forme', icon: '\uD83D\uDCDD', description: 'Style, lisibilit\u00e9, structure', color: '#008B8B', resultTemplate: 'annotated' },
-    { id: 'relecture_fond', name: 'Relecture fond', icon: '\uD83C\uDFAF', description: 'Substance, rigueur, coh\u00e9rence', color: '#E97025', resultTemplate: 'structured' },
-    { id: 'cr_entretien', name: 'CR d\'entretien', icon: '\uD83D\uDCCB', description: 'Notes brutes \u2192 CR structur\u00e9', color: '#5C2D91', resultTemplate: 'report' },
-    { id: 'synthese', name: 'Synth\u00e8se', icon: '\uD83D\uDCCA', description: 'R\u00e9sum\u00e9 ex\u00e9cutif, points cl\u00e9s', color: '#7B2FF2', resultTemplate: 'summary' },
-    { id: 'homogeneisation', name: 'Homog\u00e9n\u00e9isation', icon: '\uD83D\uDD04', description: 'Harmoniser terminologie et ton', color: '#0099BC', resultTemplate: 'annotated' },
-    { id: 'anonymisation', name: 'Anonymisation', icon: '\uD83D\uDEE1\uFE0F', description: 'RGPD : personnes, entit\u00e9s, lieux', color: '#D13438', resultTemplate: 'diff' },
-    { id: 'acronymes', name: 'Extraction acronymes', icon: '\uD83D\uDCD6', description: 'Glossaire tabul\u00e9 alphab\u00e9tique', color: '#CA5010', resultTemplate: 'table' }
+// ── OUTILS GÉNÉRAUX ────────────────────────────────────────
+// Catégories : 'redaction', 'analyse', 'forme', 'generation'
+// Options dynamiques : 'languages' (traduction), 'tones' (reformulation), 'formats' (résumé)
+var TOOLS = [
+    // ─── RÉDACTION & LANGUE ───
+    {
+        id: 'traduire', name: 'Traduire', icon: '\uD83C\uDF10',
+        desc: 'Traduire dans la langue choisie',
+        category: 'redaction',
+        options: {
+            type: 'select',
+            label: 'Langue cible',
+            key: 'targetLang',
+            choices: [
+                { value: 'en', label: 'Anglais' },
+                { value: 'de', label: 'Allemand' },
+                { value: 'es', label: 'Espagnol' },
+                { value: 'it', label: 'Italien' },
+                { value: 'pt', label: 'Portugais' },
+                { value: 'nl', label: 'N\u00e9erlandais' },
+                { value: 'zh', label: 'Chinois' },
+                { value: 'ja', label: 'Japonais' },
+                { value: 'ar', label: 'Arabe' }
+            ]
+        }
+    },
+    {
+        id: 'corriger', name: 'Corriger', icon: '\u2714\uFE0F',
+        desc: 'Orthographe, grammaire, typographie',
+        category: 'redaction'
+    },
+    {
+        id: 'reformuler', name: 'Reformuler', icon: '\uD83D\uDD04',
+        desc: 'R\u00e9\u00e9crire avec un ton diff\u00e9rent',
+        category: 'redaction',
+        options: {
+            type: 'chips',
+            key: 'tone',
+            choices: [
+                { value: 'professionnel', label: 'Professionnel' },
+                { value: 'simple', label: 'Simplifi\u00e9' },
+                { value: 'formel', label: 'Formel' },
+                { value: 'concis', label: 'Concis' },
+                { value: 'diplomatique', label: 'Diplomatique' }
+            ],
+            default: 'professionnel'
+        }
+    },
+    {
+        id: 'simplifier', name: 'Simplifier', icon: '\uD83D\uDCA1',
+        desc: 'Rendre le texte plus accessible',
+        category: 'redaction'
+    },
+    {
+        id: 'developper', name: 'D\u00e9velopper', icon: '\uD83D\uDD2D',
+        desc: '\u00c9toffer et d\u00e9tailler le texte',
+        category: 'redaction'
+    },
+
+    // ─── ANALYSE & EXTRACTION ───
+    {
+        id: 'resumer', name: 'R\u00e9sumer', icon: '\uD83D\uDCCB',
+        desc: 'Synth\u00e8se des points cl\u00e9s',
+        category: 'analyse',
+        options: {
+            type: 'chips',
+            key: 'format',
+            choices: [
+                { value: 'paragraphe', label: 'Paragraphe' },
+                { value: 'puces', label: 'Points cl\u00e9s' },
+                { value: 'executif', label: 'Ex\u00e9cutif' }
+            ],
+            default: 'puces'
+        }
+    },
+    {
+        id: 'expliquer', name: 'Expliquer', icon: '\uD83C\uDF93',
+        desc: 'Expliquer un texte complexe',
+        category: 'analyse'
+    },
+    {
+        id: 'extraire', name: 'Extraire donn\u00e9es', icon: '\uD83D\uDCCA',
+        desc: 'Chiffres, dates, noms, tableaux',
+        category: 'analyse'
+    },
+    {
+        id: 'acronymes', name: 'Acronymes', icon: '\uD83D\uDCD6',
+        desc: 'Glossaire des sigles du texte',
+        category: 'analyse'
+    },
+    {
+        id: 'comparer', name: 'Comparer', icon: '\u2696\uFE0F',
+        desc: 'Analyser diff\u00e9rences entre textes',
+        category: 'analyse'
+    },
+
+    // ─── MISE EN FORME ───
+    {
+        id: 'puces', name: 'Mettre en puces', icon: '\uD83D\uDCDD',
+        desc: 'Convertir en liste \u00e0 puces',
+        category: 'forme'
+    },
+    {
+        id: 'tableau', name: 'Mettre en tableau', icon: '\uD83D\uDCCA',
+        desc: 'Structurer en tableau',
+        category: 'forme'
+    },
+    {
+        id: 'titrer', name: 'Structurer / Titrer', icon: '\uD83C\uDFF7\uFE0F',
+        desc: 'Ajouter titres et sous-titres',
+        category: 'forme'
+    },
+
+    // ─── GÉNÉRATION ───
+    {
+        id: 'email', name: 'G\u00e9n\u00e9rer email', icon: '\u2709\uFE0F',
+        desc: '\u00c0 partir de notes ou de contexte',
+        category: 'generation',
+        options: {
+            type: 'chips',
+            key: 'emailTone',
+            choices: [
+                { value: 'formel', label: 'Formel' },
+                { value: 'cordial', label: 'Cordial' },
+                { value: 'relance', label: 'Relance' }
+            ],
+            default: 'formel'
+        }
+    },
+    {
+        id: 'plan_action', name: 'Plan d\'action', icon: '\uD83C\uDFAF',
+        desc: 'G\u00e9n\u00e9rer un plan d\'action structur\u00e9',
+        category: 'generation'
+    },
+    {
+        id: 'cr_reunion', name: 'CR de r\u00e9union', icon: '\uD83D\uDCC4',
+        desc: 'Notes brutes \u2192 compte rendu',
+        category: 'generation'
+    },
+    {
+        id: 'faq', name: 'G\u00e9n\u00e9rer FAQ', icon: '\u2753',
+        desc: 'Questions-r\u00e9ponses \u00e0 partir du texte',
+        category: 'generation'
+    }
 ];
 
-// ── PROMPTS (Système) ───────────────────────────────────────
+// ── GROUPES D'ASSISTANTS PERSONNALISÉS ─────────────────────
+// Chaque groupe repr\u00e9sente un m\u00e9tier / d\u00e9partement
+// Pour ajouter un nouveau groupe, ajoutez un objet dans ce tableau
+var ASSISTANT_GROUPS = [
+    {
+        groupId: 'audit',
+        groupName: 'Audit Interne',
+        groupIcon: '\uD83D\uDD0D',
+        groupColor: '#0F6CBD',
+        assistants: [
+            { id: 'audit_analyse',    name: 'Analyse document',     icon: '\uD83D\uDD0D', desc: 'Risques, points d\'attention',     color: '#0078D4' },
+            { id: 'audit_correction', name: 'Correction audit',     icon: '\u270F\uFE0F', desc: 'Orthographe, grammaire, typo',      color: '#107C10' },
+            { id: 'audit_forme',      name: 'Relecture forme',      icon: '\uD83D\uDCDD', desc: 'Style, lisibilit\u00e9, structure', color: '#008B8B' },
+            { id: 'audit_fond',       name: 'Relecture fond',       icon: '\uD83C\uDFAF', desc: 'Rigueur, coh\u00e9rence',           color: '#E97025' },
+            { id: 'audit_cr',         name: 'CR d\'entretien',      icon: '\uD83D\uDCCB', desc: 'Notes \u2192 CR structur\u00e9',    color: '#5C2D91' },
+            { id: 'audit_synthese',   name: 'Synth\u00e8se',        icon: '\uD83D\uDCCA', desc: 'R\u00e9sum\u00e9 ex\u00e9cutif',    color: '#7B2FF2' },
+            { id: 'audit_homog',      name: 'Homog\u00e9n\u00e9isation', icon: '\uD83D\uDD04', desc: 'Harmoniser terminologie', color: '#0099BC' },
+            { id: 'audit_anon',       name: 'Anonymisation',        icon: '\uD83D\uDEE1\uFE0F', desc: 'RGPD : masquer donn\u00e9es', color: '#D13438' },
+            { id: 'audit_acro',       name: 'Acronymes',            icon: '\uD83D\uDCD6', desc: 'Glossaire du document',              color: '#CA5010' }
+        ]
+    }
+    // ─── AJOUTEZ D'AUTRES GROUPES ICI ───
+    // {
+    //     groupId: 'juridique',
+    //     groupName: 'Direction Juridique',
+    //     groupIcon: '\u2696\uFE0F',
+    //     groupColor: '#744DA9',
+    //     assistants: [
+    //         { id: 'jur_analyse', name: 'Analyse clause', icon: '\uD83D\uDD0D', desc: 'Identifier les risques juridiques', color: '#744DA9' },
+    //         ...
+    //     ]
+    // },
+];
+
+// ── PROMPTS SYSTÈME ────────────────────────────────────────
+// Clé = id de l'outil ou de l'assistant
+// Le texte sélectionné est automatiquement envoyé en message user
 var PROMPTS = {};
 
-PROMPTS['analyse'] = "Tu es un auditeur interne senior sp\u00e9cialis\u00e9 dans le secteur bancaire fran\u00e7ais, avec une expertise approfondie des r\u00e9f\u00e9rentiels IIA, CRBF 97-02, et des bonnes pratiques en mati\u00e8re de contr\u00f4le interne. Ta mission est d\u2019analyser le document fourni avec un regard critique et m\u00e9thodique.\n\nAnalyse le texte selon les axes suivants :\n\n1. **Identification des risques** : Rep\u00e8re tous les risques potentiels (op\u00e9rationnels, de conformit\u00e9, financiers, r\u00e9putationnels). Classe-les par niveau de criticit\u00e9 (Critique / Majeur / Mod\u00e9r\u00e9 / Mineur).\n\n2. **Points d\u2019attention** : Identifie les zones de flou, les incoh\u00e9rences, les affirmations non \u00e9tay\u00e9es, les absences de contr\u00f4le, et les d\u00e9viations par rapport aux proc\u00e9dures attendues.\n\n3. **Questions d\u2019entretien** : G\u00e9n\u00e8re 5 \u00e0 10 questions pertinentes et pr\u00e9cises qui permettraient de clarifier les zones d\u2019ombre identifi\u00e9es. Chaque question doit cibler un point pr\u00e9cis du document.\n\nStructure ta r\u00e9ponse avec des titres clairs. Utilise un ton professionnel et factuel.";
+// --- Outils généraux ---
+PROMPTS['traduire']     = "Tu es un traducteur professionnel. Traduis le texte fourni dans la langue demandée. Conserve le formatage, les sauts de ligne et le ton du document original. Ne rajoute aucun commentaire, donne uniquement la traduction.";
+PROMPTS['corriger']     = "Tu es un correcteur professionnel expert en langue française. Corrige toutes les erreurs d'orthographe, grammaire, conjugaison, ponctuation et typographie française (espaces insécables, guillemets « »). Ne modifie PAS le fond. Présente : le texte corrigé complet, puis un tableau des corrections (Original | Correction | Type).";
+PROMPTS['reformuler']   = "Tu es un rédacteur professionnel. Reformule le texte fourni selon le ton demandé. Conserve l'intégralité du sens et des informations. Ne rajoute pas de contenu. Adapte le niveau de langue, la structure des phrases et le vocabulaire au ton choisi.";
+PROMPTS['simplifier']   = "Tu es un expert en communication claire. Réécris le texte pour qu'il soit compréhensible par un non-spécialiste : phrases courtes, vocabulaire simple, structure logique. Explique brièvement entre parenthèses les termes techniques incontournables. Conserve 100% des informations.";
+PROMPTS['developper']   = "Tu es un rédacteur professionnel. Développe et étoffe le texte fourni en ajoutant des détails, des exemples, des transitions et des précisions. Le résultat doit être environ 2 à 3 fois plus long que l'original, tout en restant pertinent et cohérent. Conserve le ton et le style du document.";
+PROMPTS['resumer']      = "Tu es un expert en synthèse documentaire. Résume le texte fourni selon le format demandé. Sois concis (max 30% de la longueur originale). Conserve tous les chiffres, dates et faits importants. Utilise un vocabulaire précis.";
+PROMPTS['expliquer']    = "Tu es un pédagogue expert. Explique le texte fourni de manière claire et structurée, comme si tu t'adressais à quelqu'un qui découvre le sujet. Définis les termes techniques, contextualise les informations, et donne des exemples concrets pour illustrer les concepts clés.";
+PROMPTS['extraire']     = "Tu es un analyste de données textuelles. Extrais du texte fourni toutes les données structurées : chiffres, montants, dates, noms de personnes, noms d'organisations, lieux, pourcentages, et toute autre donnée factuelle. Présente le résultat dans un tableau organisé par catégorie.";
+PROMPTS['acronymes']    = "Extrais tous les acronymes, sigles et abréviations du texte. Produis un glossaire trié alphabétiquement : | Acronyme | Définition complète | Catégorie |. Si un acronyme n'est pas défini dans le texte, propose la définition la plus probable. Signale les acronymes ambigus.";
+PROMPTS['comparer']     = "Tu es un analyste documentaire. Compare les textes ou passages fournis. Identifie : les points communs, les différences, les contradictions et les complémentarités. Présente le résultat de manière structurée avec un tableau comparatif si pertinent.";
+PROMPTS['puces']        = "Transforme le texte fourni en une liste à puces structurée et hiérarchisée. Regroupe les idées par thème si nécessaire. Chaque point doit être concis et clair. Conserve 100% des informations.";
+PROMPTS['tableau']      = "Transforme le texte fourni en un ou plusieurs tableaux structurés. Identifie les axes de structuration les plus pertinents pour les colonnes et les lignes. Conserve toutes les informations du texte original.";
+PROMPTS['titrer']       = "Restructure le texte fourni en ajoutant des titres et sous-titres pertinents (hiérarchie H2/H3). Réorganise les paragraphes si nécessaire pour améliorer la lisibilité et le flux logique. Ne modifie pas le contenu textuel.";
+PROMPTS['email']        = "Tu es un assistant de rédaction professionnelle. Génère un email à partir du contexte/notes fournis. L'email doit avoir : un objet clair, une formule d'introduction adaptée, le corps du message structuré, et une formule de politesse. Adapte le ton selon la consigne (formel, cordial, relance).";
+PROMPTS['plan_action']  = "Tu es un consultant en gestion de projet. À partir du texte fourni, génère un plan d'action structuré avec : objectifs, actions concrètes, responsables suggérés, échéances proposées, et indicateurs de suivi. Présente sous forme de tableau.";
+PROMPTS['cr_reunion']   = "Tu es un assistant de rédaction. Transforme les notes brutes fournies en un compte rendu de réunion formel : participants, date/lieu, ordre du jour, points discutés (synthèse par sujet), décisions prises, actions de suivi (tableau : Action | Responsable | Échéance), prochaines étapes.";
+PROMPTS['faq']          = "Tu es un expert en communication. À partir du texte fourni, génère une FAQ (Foire Aux Questions) complète avec 5 à 10 questions-réponses pertinentes. Les questions doivent anticiper les interrogations d'un lecteur non expert. Les réponses doivent être claires et concises.";
 
-PROMPTS['correction'] = "Tu es un correcteur professionnel expert en langue fran\u00e7aise, sp\u00e9cialis\u00e9 dans les documents d\u2019audit bancaire et les rapports institutionnels. Tu ma\u00eetrises parfaitement la grammaire, l\u2019orthographe, la conjugaison, la ponctuation et la typographie fran\u00e7aise (espaces ins\u00e9cables, guillemets fran\u00e7ais, etc.).\n\nCorrige le texte fourni en suivant ces r\u00e8gles :\n\n1. **Orthographe et grammaire** : Corrige toutes les fautes sans exception. Accords, conjugaisons, homophones.\n2. **Typographie** : Applique les r\u00e8gles typographiques fran\u00e7aises (espaces avant : ; ? !, guillemets \u00ab \u00bb, majuscules aux noms propres et sigles).\n3. **Ponctuation** : V\u00e9rifie et corrige la ponctuation pour am\u00e9liorer la lisibilit\u00e9.\n4. **Style minimal** : Reformule uniquement les phrases grammaticalement incorrectes. Ne modifie PAS le fond ni le vocabulaire technique d\u2019audit.\n\nPr\u00e9sente le r\u00e9sultat sous deux formes :\n- Le texte corrig\u00e9 complet\n- Un tableau listant chaque correction : Texte original | Correction | Type d\u2019erreur";
+// --- Assistants Audit Interne ---
+PROMPTS['audit_analyse']    = "Tu es un auditeur interne senior spécialisé dans le secteur bancaire français (IIA, CRBF 97-02). Analyse le document fourni : 1) Identification des risques (opérationnels, conformité, financiers, réputationnels) classés par criticité (Critique/Majeur/Modéré/Mineur). 2) Points d'attention : zones de flou, incohérences, affirmations non étayées. 3) Questions d'entretien : 5-10 questions ciblées. Structure avec titres clairs, ton professionnel.";
+PROMPTS['audit_correction'] = "Tu es un correcteur professionnel expert en documents d'audit bancaire. Corrige orthographe, grammaire, conjugaison, typographie française. Ne modifie PAS le fond ni le vocabulaire technique d'audit. Présente : texte corrigé + tableau des corrections.";
+PROMPTS['audit_forme']      = "Tu es un expert en rédaction de rapports d'audit. Évalue : Lisibilité, Structure, Cohérence, Ton professionnel, Impact. Pour chaque dimension : note /10, passages problématiques, version améliorée. Conclus avec note globale et 3 améliorations prioritaires.";
+PROMPTS['audit_fond']       = "Tu es un superviseur d'audit senior (15 ans d'expérience bancaire). Analyse : 1) Rigueur des constats (factuels, étayés, datés ?). 2) Cohérence constats/recommandations. 3) Pertinence des recommandations (réalistes, mesurables, responsable, délai). 4) Logique argumentative. 5) Conformité méthodologique IIA. Classe par sévérité.";
+PROMPTS['audit_cr']         = "Tu es un auditeur interne expérimenté. Transforme les notes brutes en CR d'entretien formel : En-tête (date, lieu, participants), Contexte, Points abordés (synthèse, points d'attention, documents demandés), Actions de suivi (tableau), Prochaines étapes. Reste factuel, conditionnel pour les déclarations non vérifiées.";
+PROMPTS['audit_synthese']   = "Tu es un expert en synthèse documentaire pour l'audit interne bancaire. Produis : 1) Résumé exécutif (3-5 lignes). 2) Points clés numérotés. 3) Risques critiques avec sévérité. 4) Actions/recommandations. Max 30% de la longueur originale.";
+PROMPTS['audit_homog']      = "Tu es un expert en harmonisation rédactionnelle pour rapports d'audit. Harmonise : 1) Terminologie. 2) Ton et registre. 3) Temps verbaux. 4) Formulations standardisées. 5) Mise en forme. Présente le texte avec annotations justifiant chaque modification.";
+PROMPTS['audit_anon']       = "Tu es un expert RGPD spécialisé dans l'anonymisation de documents d'audit bancaire. Remplace : personnes → [Personne A], entités → [Entité 1], lieux → [Lieu A], dates → [Date 1], numéros → [Numéro X]. Référencement cohérent + tableau de correspondance.";
+PROMPTS['audit_acro']       = "Extrais tous les acronymes, sigles et abréviations du texte d'audit. Glossaire alphabétique : | Acronyme | Définition | Catégorie (Réglementation/Organisation/Technique/Finance/Risque/Autre) |. Propose les définitions probables dans le contexte bancaire français.";
 
-PROMPTS['relecture_forme'] = "Tu es un expert en r\u00e9daction professionnelle sp\u00e9cialis\u00e9 dans les rapports d\u2019audit interne bancaire. Tu \u00e9values la qualit\u00e9 r\u00e9dactionnelle et la clart\u00e9 des documents avec un \u0153il exigeant.\n\nAnalyse le texte fourni sur les dimensions suivantes et attribue une note globale sur 10 :\n\n1. **Lisibilit\u00e9** (clart\u00e9 des phrases, longueur, jargon expliqu\u00e9)\n2. **Structure** (organisation logique, encha\u00eenements, paragraphes)\n3. **Coh\u00e9rence** (fil conducteur, absence de r\u00e9p\u00e9titions, progressivit\u00e9)\n4. **Ton professionnel** (registre adapt\u00e9 \u00e0 un rapport d\u2019audit, objectivit\u00e9)\n5. **Impact** (les messages cl\u00e9s sont-ils imm\u00e9diatement compr\u00e9hensibles ?)\n\nPour chaque dimension :\n- Attribue une note /10\n- Cite les passages probl\u00e9matiques (extrait exact)\n- Propose une version am\u00e9lior\u00e9e\n\nConclus avec la note globale et les 3 am\u00e9liorations prioritaires.";
 
-PROMPTS['relecture_fond'] = "Tu es un superviseur d\u2019audit interne senior avec 15 ans d\u2019exp\u00e9rience dans le secteur bancaire fran\u00e7ais. Tu relis les rapports d\u2019audit pour v\u00e9rifier la qualit\u00e9 sur le fond avant diffusion aux parties prenantes.\n\nAnalyse le texte fourni selon ces crit\u00e8res :\n\n1. **Rigueur des constats** : Chaque constat est-il factuel, \u00e9tay\u00e9 par des preuves, dat\u00e9 et pr\u00e9cis ? Y a-t-il des g\u00e9n\u00e9ralisations abusives ?\n2. **Coh\u00e9rence constats/recommandations** : Chaque recommandation r\u00e9pond-elle \u00e0 un constat identifi\u00e9 ? Y a-t-il des constats sans recommandation ou inversement ?\n3. **Pertinence des recommandations** : Les recommandations sont-elles r\u00e9alistes, actionables, mesurables ? Ont-elles un responsable et un d\u00e9lai ?\n4. **Logique argumentative** : Le raisonnement est-il solide ? Les conclusions d\u00e9coulent-elles logiquement des observations ?\n5. **Conformit\u00e9 m\u00e9thodologique** : Le travail respecte-t-il les normes IIA et les proc\u00e9dures internes classiques ?\n\nClasse chaque observation par niveau de s\u00e9v\u00e9rit\u00e9 (Critique / Majeur / Mod\u00e9r\u00e9 / Mineur).";
-
-PROMPTS['cr_entretien'] = "Tu es un auditeur interne exp\u00e9riment\u00e9, sp\u00e9cialis\u00e9 dans la r\u00e9daction de comptes rendus d\u2019entretien pour des missions d\u2019audit dans le secteur bancaire fran\u00e7ais. Tu sais transformer des notes brutes et d\u00e9sordonn\u00e9es en documents structur\u00e9s et professionnels.\n\nTransforme les notes fournies en un compte rendu d\u2019entretien formel :\n\n**Structure attendue :**\n- **En-t\u00eate** : Date, lieu, participants (auditeurs / audit\u00e9s), objet de l\u2019entretien\n- **Contexte** : Br\u00e8ve mise en situation\n- **Points abord\u00e9s** : Chaque sujet discut\u00e9 avec :\n  - Synth\u00e8se des propos de l\u2019audit\u00e9\n  - Points d\u2019attention identifi\u00e9s par l\u2019auditeur\n  - Documents demand\u00e9s ou \u00e0 obtenir\n- **Actions de suivi** : Tableau (Action | Responsable | \u00c9ch\u00e9ance)\n- **Prochaines \u00e9tapes**\n\nR\u00e8gles : reste factuel, neutre, utilise le conditionnel pour les d\u00e9clarations non v\u00e9rifi\u00e9es. Mentionne \u00ab selon [l\u2019interlocuteur] \u00bb pour les affirmations cl\u00e9s.";
-
-PROMPTS['synthese'] = "Tu es un expert en synth\u00e8se documentaire pour l\u2019audit interne bancaire. Tu sais extraire l\u2019essentiel d\u2019un document long et le pr\u00e9senter de mani\u00e8re concise et percutante pour un comit\u00e9 de direction.\n\nProduis une synth\u00e8se structur\u00e9e du texte fourni :\n\n1. **R\u00e9sum\u00e9 ex\u00e9cutif** (3-5 lignes) : L\u2019essentiel en un paragraphe, compr\u00e9hensible sans lire le document complet.\n2. **Points cl\u00e9s** : Liste num\u00e9rot\u00e9e des informations principales (faits, chiffres, d\u00e9cisions).\n3. **Risques critiques** : Si des risques sont mentionn\u00e9s, liste-les avec leur niveau de s\u00e9v\u00e9rit\u00e9.\n4. **Actions ou recommandations** : Si des actions sont identifi\u00e9es, r\u00e9sume-les.\n\nR\u00e8gles : sois concis (la synth\u00e8se ne doit pas d\u00e9passer 30% de la longueur du texte source). Utilise un vocabulaire pr\u00e9cis. Privil\u00e9gie les faits aux opinions.";
-
-PROMPTS['homogeneisation'] = "Tu es un expert en harmonisation r\u00e9dactionnelle pour les rapports d\u2019audit interne dans le secteur bancaire. Ton r\u00f4le est d\u2019assurer la coh\u00e9rence d\u2019un document r\u00e9dig\u00e9 par plusieurs contributeurs.\n\nHarmonise le texte fourni selon ces axes :\n\n1. **Terminologie** : Identifie les termes utilis\u00e9s de mani\u00e8re inconsistante (ex: \u00ab risque op\u00e9rationnel \u00bb vs \u00ab risque ops \u00bb) et unifie-les.\n2. **Ton et registre** : Assure un ton professionnel uniforme. \u00c9limine les variations de style entre sections.\n3. **Temps verbaux** : Harmonise les temps utilis\u00e9s (pr\u00e9sent pour les constats, pass\u00e9 compos\u00e9 pour les observations, futur/conditionnel pour les recommandations).\n4. **Formulations** : Standardise les tournures (\u00ab il est recommand\u00e9 de \u00bb, \u00ab il convient de \u00bb, \u00ab nous pr\u00e9conisons \u00bb \u2192 choisir une seule forme).\n5. **Mise en forme** : V\u00e9rifie la coh\u00e9rence des listes, des num\u00e9rotations et des niveaux de titre.\n\nPr\u00e9sente le texte harmonis\u00e9 avec des annotations indiquant chaque modification et sa justification.";
-
-PROMPTS['anonymisation'] = "Tu es un expert RGPD et protection des donn\u00e9es personnelles, sp\u00e9cialis\u00e9 dans l\u2019anonymisation de documents d\u2019audit bancaire. Tu respectes scrupuleusement les exigences du R\u00e8glement G\u00e9n\u00e9ral sur la Protection des Donn\u00e9es.\n\nAnonimise le texte fourni en rempla\u00e7ant :\n\n1. **Personnes physiques** : Pr\u00e9noms et noms \u2192 [Personne A], [Personne B], etc.\n2. **Fonctions nominatives** : \u00ab M. Dupont, directeur \u00bb \u2192 \u00ab [Personne A], [fonction] \u00bb\n3. **Entit\u00e9s/Soci\u00e9t\u00e9s** : Raisons sociales \u2192 [Entit\u00e9 1], [Entit\u00e9 2], etc.\n4. **Lieux** : Adresses, villes sp\u00e9cifiques \u2192 [Lieu A], [Lieu B]\n5. **Dates pr\u00e9cises** : JJ/MM/AAAA \u2192 [Date 1], [Date 2] (conserver les ann\u00e9es si n\u00e9cessaire au contexte)\n6. **Num\u00e9ros** : T\u00e9l\u00e9phone, comptes, identifiants \u2192 [Num\u00e9ro X]\n\nR\u00e8gles :\n- Conserve la structure et la lisibilit\u00e9 du document\n- Utilise un r\u00e9f\u00e9rencement coh\u00e9rent (la m\u00eame personne garde le m\u00eame identifiant)\n- Fournis un tableau de correspondance en fin de document\n\nPr\u00e9sente : le texte anonymis\u00e9 complet + le tableau de correspondance.";
-
-PROMPTS['acronymes'] = "Tu es un assistant documentaire sp\u00e9cialis\u00e9 dans l\u2019extraction et la d\u00e9finition d\u2019acronymes, sigle et abr\u00e9viations dans les documents d\u2019audit bancaire fran\u00e7ais.\n\nExtrais tous les acronymes, sigles et abr\u00e9viations du texte fourni et produis un glossaire sous forme de tableau :\n\n| Acronyme | D\u00e9finition compl\u00e8te | Cat\u00e9gorie |\n\nR\u00e8gles :\n1. Trie le tableau par ordre alphab\u00e9tique strict\n2. Cat\u00e9gories possibles : R\u00e9glementation, Organisation, Technique, Finance, Risque, Autre\n3. Si un acronyme n\u2019est pas explicitement d\u00e9fini dans le texte, propose la d\u00e9finition la plus probable dans le contexte bancaire/audit fran\u00e7ais\n4. Signale les acronymes ambigus (plusieurs d\u00e9finitions possibles)\n5. Inclus aussi les abr\u00e9viations courantes (cf., nb., etc.) si elles apparaissent\n\nSi aucun acronyme n\u2019est d\u00e9tect\u00e9, indique-le clairement.";
-
-// ── MOCK RESPONSES ──────────────────────────────────────────
+// ── MOCK RESPONSES (pour démo sans API) ────────────────────
 var MOCK_RESPONSES = {};
 
-MOCK_RESPONSES['analyse'] = '<h3>\uD83D\uDD34 Risques identifi\u00e9s</h3>'
-+ '<div class="section-block"><div class="section-header"><span>\u26A0\uFE0F Absence de s\u00e9paration des t\u00e2ches dans le processus de validation</span><span class="badge badge-critical">Critique</span></div>'
-+ '<div class="section-body">Le texte indique que le m\u00eame op\u00e9rateur initie et valide les transactions sup\u00e9rieures \u00e0 50\u202fK\u20AC. Cela contrevient au principe de s\u00e9gr\u00e9gation des fonctions (CRBF 97-02, art. 5).</div></div>'
-+ '<div class="section-block"><div class="section-header"><span>\u26A0\uFE0F Contr\u00f4les de second niveau non document\u00e9s</span><span class="badge badge-major">Majeur</span></div>'
-+ '<div class="section-body">Aucune trace de contr\u00f4le de second niveau n\u2019est mentionn\u00e9e pour la p\u00e9riode audit\u00e9e. L\u2019absence de documentation fragilise la piste d\u2019audit.</div></div>'
-+ '<div class="section-block"><div class="section-header"><span>\u26A0\uFE0F D\u00e9lai de tra\u00e7abilit\u00e9 des anomalies</span><span class="badge badge-moderate">Mod\u00e9r\u00e9</span></div>'
-+ '<div class="section-body">Les anomalies d\u00e9tect\u00e9es sont signal\u00e9es avec un d\u00e9lai moyen de 5 jours. La proc\u00e9dure interne impose un d\u00e9lai maximum de 48h.</div></div>'
-+ '<h3>\u2753 Questions d\u2019entretien sugg\u00e9r\u00e9es</h3>'
-+ '<ol><li>Pouvez-vous d\u00e9crire le circuit de validation effectif pour les transactions sup\u00e9rieures \u00e0 50\u202fK\u20AC\u202f? Qui sont les intervenants\u202f?</li>'
-+ '<li>Existe-t-il un plan de contr\u00f4le de second niveau formalis\u00e9\u202f? Si oui, o\u00f9 est-il document\u00e9\u202f?</li>'
-+ '<li>Comment sont escalad\u00e9es les anomalies d\u00e9tect\u00e9es\u202f? Quel est le processus d\u2019alerte\u202f?</li>'
-+ '<li>Des actions correctives ont-elles \u00e9t\u00e9 mises en place suite aux pr\u00e9c\u00e9dentes recommandations d\u2019audit\u202f?</li>'
-+ '<li>Quels outils de suivi sont utilis\u00e9s pour le reporting des contr\u00f4les permanents\u202f?</li></ol>';
+MOCK_RESPONSES['traduire'] = '<h3>Translation</h3><p>The internal audit of the permanent control system reveals significant shortcomings in the segregation of duties and in the documentation of second-level controls. Three critical recommendations require immediate action to reduce operational risk exposure.</p><p>The same operator initiates and validates transactions over €50,000, which violates the principle of segregation of duties (CRBF 97-02, art. 5).</p>';
 
-MOCK_RESPONSES['correction'] = '<h3>Texte corrig\u00e9</h3>'
-+ '<p>Le processus de contr\u00f4le interne <span class="diff-del">a \u00e9t\u00e9 mis en oeuvre</span> <span class="diff-ins">a \u00e9t\u00e9 mis en \u0153uvre</span> conform\u00e9ment aux <span class="diff-del">r\u00e9glementations</span> <span class="diff-ins">r\u00e9glementations</span> en vigueur. '
-+ 'Les <span class="diff-del">op\u00e9rateurs on</span> <span class="diff-ins">op\u00e9rateurs ont</span> suivi la proc\u00e9dure \u00e9tablie<span class="diff-del">,</span><span class="diff-ins"> ;</span> '
-+ 'toutefois<span class="diff-del"> ,</span><span class="diff-ins">,</span> des <span class="diff-del">\u00e9carts significatif</span> <span class="diff-ins">\u00e9carts significatifs</span> ont \u00e9t\u00e9 constat\u00e9s '
-+ 'au niveau du <span class="diff-del">d\u00e9partements</span> <span class="diff-ins">d\u00e9partement</span> des risques.</p>'
-+ '<h3>D\u00e9tail des corrections</h3>'
-+ '<table><tr><th>Original</th><th>Correction</th><th>Type</th></tr>'
-+ '<tr><td>mis en oeuvre</td><td>mis en \u0153uvre</td><td>Orthographe (ligature)</td></tr>'
-+ '<tr><td>op\u00e9rateurs on</td><td>op\u00e9rateurs ont</td><td>Grammaire (conjugaison)</td></tr>'
-+ '<tr><td>\u00e9tablie,</td><td>\u00e9tablie\u202f;</td><td>Ponctuation</td></tr>'
-+ '<tr><td>toutefois ,</td><td>toutefois,</td><td>Typographie (espace)</td></tr>'
-+ '<tr><td>\u00e9carts significatif</td><td>\u00e9carts significatifs</td><td>Grammaire (accord)</td></tr>'
-+ '<tr><td>d\u00e9partements</td><td>d\u00e9partement</td><td>Grammaire (nombre)</td></tr></table>';
+MOCK_RESPONSES['corriger'] = '<h3>Texte corrig\u00e9</h3><p>L\u2019audit du dispositif de contr\u00f4le permanent r\u00e9v\u00e8le des insuffisances significatives dans la s\u00e9gr\u00e9gation des fonctions et la documentation des contr\u00f4les de second niveau.</p><h3>Corrections appliqu\u00e9es</h3><table><tr><th>Original</th><th>Correction</th><th>Type</th></tr><tr><td>controle</td><td>contr\u00f4le</td><td>Accent</td></tr><tr><td>segregation</td><td>s\u00e9gr\u00e9gation</td><td>Accent</td></tr><tr><td>revelent</td><td>r\u00e9v\u00e8le</td><td>Conjugaison</td></tr></table>';
 
-MOCK_RESPONSES['relecture_forme'] = '<div class="score-display">7<span class="score-label">/ 10 \u2014 Note globale de forme</span></div>'
-+ '<div class="annotation-block"><div class="annotation-label">\uD83D\uDCD0 Lisibilit\u00e9 \u2014 6/10</div>'
-+ '<p><strong>Avant :</strong> \u00ab\u202fIl est \u00e0 noter que le processus de contr\u00f4le permanent de second niveau qui a \u00e9t\u00e9 mis en place par la direction des risques op\u00e9rationnels ne fait pas l\'objet d\'un suivi r\u00e9gulier.\u202f\u00bb</p>'
-+ '<p><strong>Suggestion :</strong> \u00ab\u202fLe contr\u00f4le permanent de second niveau, pilot\u00e9 par la direction des risques op\u00e9rationnels, ne fait pas l\'objet d\'un suivi r\u00e9gulier.\u202f\u00bb</p>'
-+ '<p><em>Raison : phrase de 40 mots \u2192 simplifi\u00e9e \u00e0 22 mots, suppression de la tournure impersonnelle.</em></p></div>'
-+ '<div class="annotation-block"><div class="annotation-label">\uD83D\uDDC2\uFE0F Structure \u2014 8/10</div>'
-+ '<p>Bonne organisation g\u00e9n\u00e9rale. Les sections suivent une logique descendante (contexte \u2192 constats \u2192 recommandations). Sugg\u00e9rer l\'ajout de sous-titres dans la section \u00ab\u202fConstats\u202f\u00bb pour faciliter la navigation.</p></div>'
-+ '<div class="annotation-block improved"><div class="annotation-label">\u2705 Ton professionnel \u2014 8/10</div>'
-+ '<p>Le registre est globalement adapt\u00e9. Attention \u00e0 \u00e9viter les formulations subjectives comme \u00ab\u202fclairement insuffisant\u202f\u00bb \u2192 pr\u00e9f\u00e9rer \u00ab\u202fjug\u00e9 insuffisant au regard de [crit\u00e8re]\u202f\u00bb.</p></div>'
-+ '<h3>3 am\u00e9liorations prioritaires</h3>'
-+ '<ol><li>Raccourcir les phrases de plus de 30 mots (8 occurrences d\u00e9tect\u00e9es)</li>'
-+ '<li>Ajouter des sous-titres dans la section Constats</li>'
-+ '<li>Remplacer les tournures impersonnelles par des formulations directes</li></ol>';
+MOCK_RESPONSES['reformuler'] = '<h3>Version reformul\u00e9e</h3><p>Le contr\u00f4le permanent pr\u00e9sente des faiblesses notables. Plus pr\u00e9cis\u00e9ment, la s\u00e9paration des r\u00f4les n\u2019est pas respect\u00e9e et les v\u00e9rifications de second niveau ne sont pas correctement trac\u00e9es. Il est imp\u00e9ratif de mettre en \u0153uvre les trois mesures correctives identifi\u00e9es sans d\u00e9lai.</p>';
 
-MOCK_RESPONSES['relecture_fond'] = '<h3>\uD83D\uDD0E Analyse de fond du rapport</h3>'
-+ '<div class="section-block"><div class="section-header"><span>Constat n\u00b01 : Insuffisance du dispositif KYC \u2014 v\u00e9rification</span><span class="badge badge-critical">Critique</span></div>'
-+ '<div class="section-body"><p><strong>Probl\u00e8me :</strong> Le constat affirme que \u00ab\u202fle dispositif KYC est d\u00e9faillant\u202f\u00bb mais ne fournit aucun chiffre (taux de dossiers non conformes, nombre de revues p\u00e9riodiques manqu\u00e9es).</p>'
-+ '<p><strong>Recommandation associ\u00e9e :</strong> \u00ab\u202fRenforcer le dispositif KYC\u202f\u00bb \u2014 trop vague. Manque : responsable, \u00e9ch\u00e9ance, crit\u00e8re de r\u00e9ussite mesurable.</p>'
-+ '<p><strong>Suggestion :</strong> Quantifier le constat (ex : \u00ab\u202f23% des dossiers examin\u00e9s pr\u00e9sentent...\u202f\u00bb) et pr\u00e9ciser la recommandation avec un plan d\'action dat\u00e9.</p></div></div>'
-+ '<div class="section-block"><div class="section-header"><span>Constat n\u00b02 : Suivi des recommandations ant\u00e9rieures</span><span class="badge badge-major">Majeur</span></div>'
-+ '<div class="section-body"><p><strong>Probl\u00e8me :</strong> Le rapport mentionne des recommandations de la mission N-1 mais ne pr\u00e9cise pas leur statut de mise en \u0153uvre. Cela emp\u00eache d\'\u00e9valuer le progr\u00e8s.</p>'
-+ '<p><strong>Suggestion :</strong> Ajouter un tableau de suivi des recommandations ant\u00e9rieures avec statut (Clos / En cours / Non d\u00e9marr\u00e9).</p></div></div>'
-+ '<div class="section-block"><div class="section-header"><span>Coh\u00e9rence constats/recommandations</span><span class="badge badge-moderate">Mod\u00e9r\u00e9</span></div>'
-+ '<div class="section-body"><p>Le constat n\u00b03 (formation insuffisante) n\'a pas de recommandation associ\u00e9e. Inversement, la recommandation n\u00b05 (am\u00e9lioration du reporting) n\'est rattach\u00e9e \u00e0 aucun constat explicite.</p></div></div>';
+MOCK_RESPONSES['resumer'] = '<div class="exec-summary"><div class="exec-summary-title">Synth\u00e8se</div><p>L\u2019audit r\u00e9v\u00e8le 3 points critiques : absence de s\u00e9gr\u00e9gation des t\u00e2ches, contr\u00f4les N2 non document\u00e9s, d\u00e9lais de remont\u00e9e non conformes. Actions imm\u00e9diates requises.</p></div><h3>Points cl\u00e9s</h3><ul><li><strong>S\u00e9gr\u00e9gation</strong> \u2014 M\u00eame op\u00e9rateur pour initiation et validation (> 50 K\u20AC)</li><li><strong>Contr\u00f4les N2</strong> \u2014 Aucune trace sur la p\u00e9riode T1-T2</li><li><strong>D\u00e9lais anomalies</strong> \u2014 5 jours vs. 48h r\u00e9glementaires</li><li><strong>Plan de contr\u00f4le</strong> \u2014 Taux d\u2019ex\u00e9cution \u00e0 40% au S1</li></ul>';
 
-MOCK_RESPONSES['cr_entretien'] = '<div class="report-meta">'
-+ '<div class="report-meta-row"><span class="report-meta-label">Date :</span><span>[Date de l\'entretien]</span></div>'
-+ '<div class="report-meta-row"><span class="report-meta-label">Lieu :</span><span>[Lieu / Visioconf\u00e9rence]</span></div>'
-+ '<div class="report-meta-row"><span class="report-meta-label">Auditeurs :</span><span>[Noms des auditeurs]</span></div>'
-+ '<div class="report-meta-row"><span class="report-meta-label">Audit\u00e9s :</span><span>[Noms et fonctions des audit\u00e9s]</span></div>'
-+ '<div class="report-meta-row"><span class="report-meta-label">Objet :</span><span>Revue du processus de contr\u00f4le permanent</span></div></div>'
-+ '<h3>1. Contexte</h3>'
-+ '<p>Cet entretien s\'inscrit dans le cadre de la mission d\'audit du dispositif de contr\u00f4le permanent. Il vise \u00e0 comprendre l\'organisation actuelle et identifier les axes d\'am\u00e9lioration.</p>'
-+ '<h3>2. Points abord\u00e9s</h3>'
-+ '<p><strong>2.1 Organisation du contr\u00f4le permanent</strong></p>'
-+ '<p>Selon l\'interlocuteur, l\'\u00e9quipe est compos\u00e9e de 4 contr\u00f4leurs pour 12 processus m\u00e9tier. Le plan de contr\u00f4le annuel serait valid\u00e9 par le responsable de la conformit\u00e9.</p>'
-+ '<p>\uD83D\uDD38 <em>Point d\'attention :</em> Le ratio contr\u00f4leurs/processus semble faible. \u00c0 v\u00e9rifier avec les donn\u00e9es RH.</p>'
-+ '<p><strong>2.2 Outils et reporting</strong></p>'
-+ '<p>L\'interlocuteur indique que le suivi se fait sur tableur Excel. Aucun outil d\u00e9di\u00e9 n\'est d\u00e9ploy\u00e9. Les reportings seraient transmis mensuellement au COMEX.</p>'
-+ '<p>\uD83D\uDD38 <em>Point d\'attention :</em> Risque d\'int\u00e9grit\u00e9 des donn\u00e9es li\u00e9 \u00e0 l\'utilisation d\'Excel. Demander une copie du dernier reporting.</p>'
-+ '<h3>3. Actions de suivi</h3>'
-+ '<table><tr><th>Action</th><th>Responsable</th><th>\u00c9ch\u00e9ance</th></tr>'
-+ '<tr><td>Obtenir le plan de contr\u00f4le 2025</td><td>\u00c9quipe audit</td><td>[J+5]</td></tr>'
-+ '<tr><td>Transmettre l\'organigramme \u00e0 jour</td><td>Audit\u00e9</td><td>[J+3]</td></tr>'
-+ '<tr><td>Fournir le dernier reporting COMEX</td><td>Audit\u00e9</td><td>[J+5]</td></tr></table>';
+MOCK_RESPONSES['simplifier'] = '<h3>Version simplifi\u00e9e</h3><p>Un audit (= v\u00e9rification approfondie) a \u00e9t\u00e9 r\u00e9alis\u00e9 sur le syst\u00e8me de contr\u00f4le interne. Voici ce qui a \u00e9t\u00e9 trouv\u00e9 :</p><ul><li>La m\u00eame personne fait le travail ET le v\u00e9rifie, ce qui est interdit (on appelle cela la \u00ab\u202fs\u00e9gr\u00e9gation des t\u00e2ches\u202f\u00bb).</li><li>Les v\u00e9rifications de deuxi\u00e8me niveau (contr\u00f4les faits par un sup\u00e9rieur) ne sont pas trac\u00e9es.</li><li>Quand un probl\u00e8me est d\u00e9tect\u00e9, il est signal\u00e9 en 5 jours au lieu des 2 jours maximum pr\u00e9vus.</li></ul>';
 
-MOCK_RESPONSES['synthese'] = '<div class="exec-summary"><div class="exec-summary-title">R\u00e9sum\u00e9 ex\u00e9cutif</div>'
-+ '<p>L\'audit du dispositif de contr\u00f4le permanent r\u00e9v\u00e8le des insuffisances significatives dans la s\u00e9gr\u00e9gation des fonctions et la documentation des contr\u00f4les de second niveau. Trois recommandations critiques n\u00e9cessitent une action imm\u00e9diate pour r\u00e9duire l\'exposition au risque op\u00e9rationnel.</p></div>'
-+ '<h3>\uD83D\uDD11 Points cl\u00e9s</h3>'
-+ '<ol><li><strong>S\u00e9gr\u00e9gation des t\u00e2ches non respect\u00e9e</strong> pour les transactions > 50\u202fK\u20AC (constat critique).</li>'
-+ '<li><strong>Contr\u00f4les de second niveau non trac\u00e9s</strong> sur la p\u00e9riode d\'audit (T1-T2 2025).</li>'
-+ '<li><strong>D\u00e9lai de remont\u00e9e des anomalies</strong> de 5 jours vs. 48h r\u00e9glementaires.</li>'
-+ '<li><strong>Plan de contr\u00f4le 2025</strong> valid\u00e9 mais taux d\'ex\u00e9cution \u00e0 40% au S1.</li>'
-+ '<li><strong>Formation des op\u00e9rateurs</strong> : derni\u00e8re session en 2023, aucune planifi\u00e9e.</li></ol>'
-+ '<h3>\u26A0\uFE0F Risques critiques</h3>'
-+ '<ul><li><span class="badge badge-critical" style="font-size:10px">Critique</span> Non-conformit\u00e9 CRBF 97-02 (s\u00e9gr\u00e9gation)</li>'
-+ '<li><span class="badge badge-critical" style="font-size:10px">Critique</span> Risque op\u00e9rationnel non couvert (contr\u00f4les N2)</li>'
-+ '<li><span class="badge badge-major" style="font-size:10px">Majeur</span> D\u00e9faut de tra\u00e7abilit\u00e9 des anomalies</li></ul>';
+MOCK_RESPONSES['expliquer'] = '<h3>Explication</h3><p>Ce texte d\u00e9crit les r\u00e9sultats d\u2019un <strong>audit de contr\u00f4le permanent</strong>, c\u2019est-\u00e0-dire une v\u00e9rification r\u00e9guli\u00e8re des processus internes d\u2019une entreprise (ici, une banque).</p><p><strong>S\u00e9gr\u00e9gation des fonctions</strong> : principe selon lequel une m\u00eame personne ne doit pas \u00e0 la fois ex\u00e9cuter une op\u00e9ration et la valider. C\u2019est comme si un \u00e9l\u00e8ve corrigeait sa propre copie \u2014 le risque d\u2019erreur ou de fraude augmente.</p><p><strong>Contr\u00f4les de second niveau</strong> : v\u00e9rifications r\u00e9alis\u00e9es par une personne ou un service ind\u00e9pendant de celui qui a ex\u00e9cut\u00e9 l\u2019op\u00e9ration. Ici, ces contr\u00f4les existent en th\u00e9orie mais ne sont pas document\u00e9s.</p>';
 
-MOCK_RESPONSES['homogeneisation'] = '<div class="annotation-block"><div class="annotation-label">\uD83D\uDD04 Terminologie harmonis\u00e9e</div>'
-+ '<p><span class="diff-del">risque ops</span> \u2192 <span class="diff-ins">risque op\u00e9rationnel</span> (3 occurrences)</p>'
-+ '<p><span class="diff-del">KYC</span> / <span class="diff-del">connaissance client</span> \u2192 <span class="diff-ins">KYC (Know Your Customer)</span> d\u00e9fini \u00e0 la premi\u00e8re occurrence, puis <span class="diff-ins">KYC</span> (5 occurrences)</p>'
-+ '<p><span class="diff-del">le D\u00e9partement</span> / <span class="diff-del">la Direction</span> \u2192 <span class="diff-ins">la Direction des Risques</span> (forme compl\u00e8te retenue, 4 occurrences)</p></div>'
-+ '<div class="annotation-block"><div class="annotation-label">\uD83D\uDD04 Temps verbaux harmonis\u00e9s</div>'
-+ '<p>Section Constats : pass\u00e9 compos\u00e9 retenu pour tous les constats.</p>'
-+ '<p><span class="diff-del">\u00ab\u202fLe contr\u00f4le n\u2019\u00e9tait pas effectu\u00e9\u202f\u00bb</span> \u2192 <span class="diff-ins">\u00ab\u202fLe contr\u00f4le n\u2019a pas \u00e9t\u00e9 effectu\u00e9\u202f\u00bb</span></p>'
-+ '<p>Section Recommandations : infinitif retenu pour toutes les recommandations.</p>'
-+ '<p><span class="diff-del">\u00ab\u202fIl faudrait mettre en place\u202f\u00bb</span> \u2192 <span class="diff-ins">\u00ab\u202fMettre en place\u202f\u00bb</span></p></div>'
-+ '<div class="annotation-block"><div class="annotation-label">\uD83D\uDD04 Formulations standardis\u00e9es</div>'
-+ '<p>Forme retenue pour les recommandations : <strong>\u00ab\u202fIl est recommand\u00e9 de + infinitif\u202f\u00bb</strong></p>'
-+ '<p><span class="diff-del">\u00ab\u202fNous pr\u00e9conisons de\u202f\u00bb</span> \u2192 <span class="diff-ins">\u00ab\u202fIl est recommand\u00e9 de\u202f\u00bb</span> (2 occurrences)</p>'
-+ '<p><span class="diff-del">\u00ab\u202fIl convient de\u202f\u00bb</span> \u2192 <span class="diff-ins">\u00ab\u202fIl est recommand\u00e9 de\u202f\u00bb</span> (3 occurrences)</p></div>';
+MOCK_RESPONSES['extraire'] = '<h3>Donn\u00e9es extraites</h3><table><tr><th>Cat\u00e9gorie</th><th>Donn\u00e9e</th><th>Contexte</th></tr><tr><td>Montant</td><td>50 000 \u20AC</td><td>Seuil de s\u00e9gr\u00e9gation</td></tr><tr><td>P\u00e9riode</td><td>T1-T2 2025</td><td>P\u00e9riode audit\u00e9e</td></tr><tr><td>D\u00e9lai</td><td>5 jours</td><td>Remont\u00e9e anomalies (r\u00e9el)</td></tr><tr><td>D\u00e9lai r\u00e9f.</td><td>48h</td><td>Remont\u00e9e anomalies (norme)</td></tr><tr><td>Taux</td><td>40%</td><td>Ex\u00e9cution plan contr\u00f4le S1</td></tr><tr><td>R\u00e9f\u00e9rence</td><td>CRBF 97-02, art. 5</td><td>R\u00e9glementation applicable</td></tr></table>';
 
-MOCK_RESPONSES['anonymisation'] = '<h3>Texte anonymis\u00e9</h3>'
-+ '<p>Lors de l\u2019entretien du <span class="diff-del">15 mars 2025</span> <span class="diff-ins">[Date 1]</span>, '
-+ '<span class="diff-del">M. Jean-Pierre Durand</span> <span class="diff-ins">[Personne A]</span>, '
-+ 'directeur des risques de <span class="diff-del">la Banque R\u00e9gionale du Centre</span> <span class="diff-ins">[Entit\u00e9 1]</span>, '
-+ 'a indiqu\u00e9 que l\u2019agence de <span class="diff-del">Lyon Part-Dieu</span> <span class="diff-ins">[Lieu A]</span> '
-+ 'pr\u00e9sentait des anomalies dans le traitement des dossiers de cr\u00e9dit. '
-+ '<span class="diff-del">Mme Sophie Martin</span> <span class="diff-ins">[Personne B]</span>, responsable conformit\u00e9, '
-+ 'a confirm\u00e9 ces observations par courriel du <span class="diff-del">22 mars 2025</span> <span class="diff-ins">[Date 2]</span>. '
-+ 'Le num\u00e9ro de dossier <span class="diff-del">CRD-2025-04789</span> <span class="diff-ins">[Num\u00e9ro 1]</span> '
-+ 'est particuli\u00e8rement concern\u00e9.</p>'
-+ '<h3>Tableau de correspondance</h3>'
-+ '<table><tr><th>Code</th><th>Valeur originale</th><th>Cat\u00e9gorie</th></tr>'
-+ '<tr><td>[Personne A]</td><td>M. Jean-Pierre Durand</td><td>Personne physique</td></tr>'
-+ '<tr><td>[Personne B]</td><td>Mme Sophie Martin</td><td>Personne physique</td></tr>'
-+ '<tr><td>[Entit\u00e9 1]</td><td>Banque R\u00e9gionale du Centre</td><td>Entit\u00e9</td></tr>'
-+ '<tr><td>[Lieu A]</td><td>Lyon Part-Dieu</td><td>Lieu</td></tr>'
-+ '<tr><td>[Date 1]</td><td>15 mars 2025</td><td>Date</td></tr>'
-+ '<tr><td>[Date 2]</td><td>22 mars 2025</td><td>Date</td></tr>'
-+ '<tr><td>[Num\u00e9ro 1]</td><td>CRD-2025-04789</td><td>Identifiant</td></tr></table>';
+MOCK_RESPONSES['acronymes'] = '<table><tr><th>Acronyme</th><th>D\u00e9finition</th><th>Cat\u00e9gorie</th></tr><tr><td>CRBF</td><td>Comit\u00e9 de la R\u00e9glementation Bancaire et Financi\u00e8re</td><td>R\u00e9glementation</td></tr><tr><td>KYC</td><td>Know Your Customer</td><td>R\u00e9glementation</td></tr><tr><td>COMEX</td><td>Comit\u00e9 Ex\u00e9cutif</td><td>Organisation</td></tr><tr><td>RGPD</td><td>R\u00e8glement G\u00e9n\u00e9ral sur la Protection des Donn\u00e9es</td><td>R\u00e9glementation</td></tr></table>';
 
-MOCK_RESPONSES['acronymes'] = '<table>'
-+ '<tr><th>Acronyme</th><th>D\u00e9finition compl\u00e8te</th><th>Cat\u00e9gorie</th></tr>'
-+ '<tr><td>ACPR</td><td>Autorit\u00e9 de Contr\u00f4le Prudentiel et de R\u00e9solution</td><td>R\u00e9glementation</td></tr>'
-+ '<tr><td>COMEX</td><td>Comit\u00e9 Ex\u00e9cutif</td><td>Organisation</td></tr>'
-+ '<tr><td>CRBF</td><td>Comit\u00e9 de la R\u00e9glementation Bancaire et Financi\u00e8re</td><td>R\u00e9glementation</td></tr>'
-+ '<tr><td>DCP</td><td>Dispositif de Contr\u00f4le Permanent</td><td>Organisation</td></tr>'
-+ '<tr><td>DSI</td><td>Direction des Syst\u00e8mes d\u2019Information</td><td>Organisation</td></tr>'
-+ '<tr><td>EBA</td><td>European Banking Authority (Autorit\u00e9 Bancaire Europ\u00e9enne)</td><td>R\u00e9glementation</td></tr>'
-+ '<tr><td>KYC</td><td>Know Your Customer (Connaissance du client)</td><td>R\u00e9glementation</td></tr>'
-+ '<tr><td>LAB-FT</td><td>Lutte Anti-Blanchiment et Financement du Terrorisme</td><td>R\u00e9glementation</td></tr>'
-+ '<tr><td>PCA</td><td>Plan de Continuit\u00e9 d\u2019Activit\u00e9</td><td>Risque</td></tr>'
-+ '<tr><td>RCSA</td><td>Risk and Control Self-Assessment (\u00c9valuation des risques et contr\u00f4les)</td><td>Risque</td></tr>'
-+ '<tr><td>RGPD</td><td>R\u00e8glement G\u00e9n\u00e9ral sur la Protection des Donn\u00e9es</td><td>R\u00e9glementation</td></tr>'
-+ '<tr><td>SI</td><td>Syst\u00e8me d\u2019Information</td><td>Technique</td></tr></table>';
+MOCK_RESPONSES['email'] = '<h3>Objet : Suivi de l\u2019audit du contr\u00f4le permanent \u2014 Actions requises</h3><p>Madame, Monsieur,</p><p>Suite \u00e0 la finalisation de notre mission d\u2019audit du dispositif de contr\u00f4le permanent, je me permets de vous adresser les conclusions principales et les actions correctives \u00e0 mettre en \u0153uvre.</p><p>Trois points critiques n\u00e9cessitent une attention imm\u00e9diate :</p><ul><li>La s\u00e9gr\u00e9gation des fonctions pour les transactions sup\u00e9rieures \u00e0 50 K\u20AC</li><li>La documentation des contr\u00f4les de second niveau</li><li>Le respect des d\u00e9lais de remont\u00e9e des anomalies</li></ul><p>Je reste \u00e0 votre disposition pour \u00e9changer sur ces sujets.</p><p>Cordialement,<br/>[Votre nom]</p>';
 
-// ── APP STATE ───────────────────────────────────────────────
+MOCK_RESPONSES['plan_action'] = '<h3>Plan d\u2019action</h3><table><tr><th>N\u00b0</th><th>Action</th><th>Responsable</th><th>\u00c9ch\u00e9ance</th><th>Priorit\u00e9</th></tr><tr><td>1</td><td>Mettre en place la double validation pour les transactions > 50 K\u20AC</td><td>Dir. Op\u00e9rations</td><td>J+15</td><td style="color:#C4314B;font-weight:600">Critique</td></tr><tr><td>2</td><td>D\u00e9ployer un outil de tra\u00e7abilit\u00e9 des contr\u00f4les N2</td><td>DSI + Conformit\u00e9</td><td>J+30</td><td style="color:#C4314B;font-weight:600">Critique</td></tr><tr><td>3</td><td>R\u00e9duire le d\u00e9lai de remont\u00e9e des anomalies \u00e0 48h</td><td>Dir. Risques</td><td>J+10</td><td style="color:#E97025;font-weight:600">Majeur</td></tr><tr><td>4</td><td>Planifier une session de formation pour les op\u00e9rateurs</td><td>RH + Audit</td><td>J+45</td><td style="color:var(--warn);font-weight:600">Mod\u00e9r\u00e9</td></tr></table>';
+
+MOCK_RESPONSES['cr_reunion'] = '<div class="report-meta"><div class="report-meta-row"><span class="report-meta-label">Date :</span><span>[Date]</span></div><div class="report-meta-row"><span class="report-meta-label">Participants :</span><span>[Liste]</span></div><div class="report-meta-row"><span class="report-meta-label">Objet :</span><span>Point d\u2019avancement audit</span></div></div><h3>Points discut\u00e9s</h3><p><strong>1. \u00c9tat des lieux</strong> \u2014 La s\u00e9gr\u00e9gation des t\u00e2ches n\u2019est toujours pas en place pour les transactions critiques.</p><p><strong>2. Plan de rem\u00e9diation</strong> \u2014 Un projet de double validation sera soumis au COMEX d\u2019ici fin de mois.</p><h3>Actions</h3><table><tr><th>Action</th><th>Qui</th><th>Quand</th></tr><tr><td>Soumettre le projet de double validation</td><td>Dir. Ops</td><td>[Date]</td></tr><tr><td>Fournir les logs de contr\u00f4les N2</td><td>DSI</td><td>[Date]</td></tr></table>';
+
+MOCK_RESPONSES['puces'] = '<h3>Liste structur\u00e9e</h3><ul><li><strong>Contr\u00f4le permanent</strong><ul><li>Insuffisances significatives identifi\u00e9es</li><li>S\u00e9gr\u00e9gation des fonctions non respect\u00e9e (transactions > 50 K\u20AC)</li></ul></li><li><strong>Documentation</strong><ul><li>Contr\u00f4les N2 non trac\u00e9s sur T1-T2 2025</li><li>Piste d\u2019audit fragilis\u00e9e</li></ul></li><li><strong>Anomalies</strong><ul><li>D\u00e9lai de remont\u00e9e : 5 jours (norme : 48h)</li></ul></li></ul>';
+
+MOCK_RESPONSES['tableau'] = '<table><tr><th>Constat</th><th>Criticit\u00e9</th><th>R\u00e9f\u00e9rence</th><th>Recommandation</th></tr><tr><td>S\u00e9gr\u00e9gation non respect\u00e9e</td><td style="color:#C4314B;font-weight:600">Critique</td><td>CRBF 97-02, art. 5</td><td>Double validation > 50 K\u20AC</td></tr><tr><td>Contr\u00f4les N2 non trac\u00e9s</td><td style="color:#C4314B;font-weight:600">Critique</td><td>Proc\u00e9dure interne</td><td>Outil de tra\u00e7abilit\u00e9</td></tr><tr><td>D\u00e9lai anomalies (5j vs 48h)</td><td style="color:#E97025;font-weight:600">Majeur</td><td>R\u00e8glement interne</td><td>Workflow automatis\u00e9</td></tr></table>';
+
+MOCK_RESPONSES['faq'] = '<h3>FAQ</h3><p><strong>Q1 : Qu\u2019est-ce que la s\u00e9gr\u00e9gation des fonctions ?</strong></p><p>C\u2019est le principe selon lequel une m\u00eame personne ne doit pas cumuler des fonctions incompatibles (ex : initier et valider une op\u00e9ration).</p><p><strong>Q2 : Pourquoi les contr\u00f4les de second niveau sont-ils importants ?</strong></p><p>Ils constituent un filet de s\u00e9curit\u00e9 ind\u00e9pendant pour d\u00e9tecter les erreurs ou irr\u00e9gularit\u00e9s non identifi\u00e9es au premier niveau.</p><p><strong>Q3 : Quel est le d\u00e9lai r\u00e9glementaire de remont\u00e9e des anomalies ?</strong></p><p>48 heures selon la proc\u00e9dure interne. L\u2019audit a constat\u00e9 un d\u00e9lai moyen de 5 jours.</p>';
+
+// Alias : les assistants audit utilisent les mêmes réponses mock
+MOCK_RESPONSES['audit_analyse']    = MOCK_RESPONSES['extraire'] ? '<h3>\uD83D\uDD34 Risques identifi\u00e9s</h3><div class="section-block"><div class="section-header"><span>\u26A0\uFE0F Absence de s\u00e9paration des t\u00e2ches</span><span class="badge badge-critical">Critique</span></div><div class="section-body">Le m\u00eame op\u00e9rateur initie et valide les transactions > 50 K\u20AC (CRBF 97-02, art. 5).</div></div><div class="section-block"><div class="section-header"><span>\u26A0\uFE0F Contr\u00f4les N2 non document\u00e9s</span><span class="badge badge-major">Majeur</span></div><div class="section-body">Aucune trace sur la p\u00e9riode audit\u00e9e.</div></div>' : '';
+MOCK_RESPONSES['audit_correction'] = MOCK_RESPONSES['corriger'];
+MOCK_RESPONSES['audit_forme']      = '<div class="score-display">6.5 <span class="score-label">/10</span></div><h3>\u00c9valuation d\u00e9taill\u00e9e</h3><table><tr><th>Dimension</th><th>Note</th><th>Commentaire</th></tr><tr><td>Lisibilit\u00e9</td><td>6/10</td><td>Phrases trop longues (8 occurrences > 30 mots)</td></tr><tr><td>Structure</td><td>7/10</td><td>Bonne organisation g\u00e9n\u00e9rale, sous-titres manquants</td></tr><tr><td>Coh\u00e9rence</td><td>7/10</td><td>Fil conducteur pr\u00e9sent, 2 r\u00e9p\u00e9titions</td></tr><tr><td>Ton</td><td>7/10</td><td>Globalement adapt\u00e9, tournures impersonnelles recommand\u00e9es</td></tr><tr><td>Impact</td><td>5/10</td><td>Messages cl\u00e9s noy\u00e9s dans le d\u00e9tail</td></tr></table>';
+MOCK_RESPONSES['audit_fond']       = '<h3>\uD83D\uDD0E Analyse de fond</h3><div class="section-block"><div class="section-header"><span>Constat n\u00b01 : KYC \u2014 manque de preuves</span><span class="badge badge-critical">Critique</span></div><div class="section-body"><p><strong>Probl\u00e8me :</strong> Affirmation \u00ab le dispositif KYC est d\u00e9faillant \u00bb sans chiffres.</p><p><strong>Suggestion :</strong> Quantifier (ex: \u00ab 23% des dossiers non conformes \u00bb) et pr\u00e9ciser le plan d\u2019action.</p></div></div>';
+MOCK_RESPONSES['audit_cr']         = MOCK_RESPONSES['cr_reunion'];
+MOCK_RESPONSES['audit_synthese']   = MOCK_RESPONSES['resumer'];
+MOCK_RESPONSES['audit_homog']      = '<div class="annotation-block"><div class="annotation-label">\uD83D\uDD04 Terminologie harmonis\u00e9e</div><p><span class="diff-del">risque ops</span> \u2192 <span class="diff-ins">risque op\u00e9rationnel</span> (3 occ.)</p><p><span class="diff-del">KYC</span> / <span class="diff-del">connaissance client</span> \u2192 <span class="diff-ins">KYC (Know Your Customer)</span> puis <span class="diff-ins">KYC</span></p></div><div class="annotation-block"><div class="annotation-label">\uD83D\uDD04 Formulations standardis\u00e9es</div><p><span class="diff-del">\u00ab Nous pr\u00e9conisons \u00bb</span> \u2192 <span class="diff-ins">\u00ab Il est recommand\u00e9 de \u00bb</span> (5 occ.)</p></div>';
+MOCK_RESPONSES['audit_anon']       = '<h3>Texte anonymis\u00e9</h3><p><span class="diff-del">M. Durand</span> <span class="diff-ins">[Personne A]</span>, directeur des risques de <span class="diff-del">la Banque R\u00e9gionale du Centre</span> <span class="diff-ins">[Entit\u00e9 1]</span>, a indiqu\u00e9 que l\u2019agence de <span class="diff-del">Lyon Part-Dieu</span> <span class="diff-ins">[Lieu A]</span> pr\u00e9sentait des anomalies.</p><h3>Correspondances</h3><table><tr><th>Code</th><th>Original</th><th>Cat\u00e9gorie</th></tr><tr><td>[Personne A]</td><td>M. Durand</td><td>Personne</td></tr><tr><td>[Entit\u00e9 1]</td><td>Banque R\u00e9gionale du Centre</td><td>Entit\u00e9</td></tr><tr><td>[Lieu A]</td><td>Lyon Part-Dieu</td><td>Lieu</td></tr></table>';
+MOCK_RESPONSES['audit_acro']       = MOCK_RESPONSES['acronymes'];
+
+// Defaults for tools without specific mock
+MOCK_RESPONSES['comparer']  = '<h3>Comparaison</h3><p>Les deux passages partagent le m\u00eame th\u00e8me (contr\u00f4le permanent) mais divergent sur la conclusion. Le premier met l\u2019accent sur les insuffisances, le second sur les progr\u00e8s r\u00e9alis\u00e9s.</p><table><tr><th>Crit\u00e8re</th><th>Texte 1</th><th>Texte 2</th></tr><tr><td>Tonalit\u00e9</td><td>Critique</td><td>Positive</td></tr><tr><td>Chiffres</td><td>Oui (50K\u20AC, 48h)</td><td>Non</td></tr></table>';
+MOCK_RESPONSES['titrer']    = '<h3>Version structur\u00e9e</h3><h3>1. Contexte de l\u2019audit</h3><p>L\u2019audit porte sur le dispositif de contr\u00f4le permanent...</p><h3>2. Constats principaux</h3><h3>2.1 S\u00e9gr\u00e9gation des fonctions</h3><p>Le m\u00eame op\u00e9rateur initie et valide...</p><h3>2.2 Documentation des contr\u00f4les</h3><p>Aucune trace de contr\u00f4le N2...</p><h3>3. Recommandations</h3><p>Trois mesures correctives prioritaires...</p>';
+MOCK_RESPONSES['developper'] = '<h3>Version d\u00e9velopp\u00e9e</h3><p>L\u2019audit approfondi du dispositif de contr\u00f4le permanent, men\u00e9 sur la p\u00e9riode couvrant les premier et deuxi\u00e8me trimestres de l\u2019ann\u00e9e 2025, a permis de mettre en \u00e9vidence des insuffisances significatives qui appellent une attention particuli\u00e8re de la part de la direction g\u00e9n\u00e9rale.</p><p>En premier lieu, l\u2019examen d\u00e9taill\u00e9 des processus de validation a r\u00e9v\u00e9l\u00e9 que le principe fondamental de s\u00e9gr\u00e9gation des fonctions \u2014 qui constitue l\u2019un des piliers du contr\u00f4le interne tel que d\u00e9fini par le r\u00e8glement CRBF 97-02 en son article 5 \u2014 n\u2019est pas respect\u00e9 pour les transactions dont le montant exc\u00e8de 50 000 euros...</p>';
+
+
+// ── APP STATE ──────────────────────────────────────────────
 var AppState = {
-    currentAssistant: null,
+    currentItem: null,        // Current tool or assistant
+    currentType: '',          // 'tool' or 'assistant'
     messages: [],
     selectedText: '',
     isLoading: false,
-    dialog: null,
     pollingTimer: null,
     lastResponseHtml: '',
-    lastResponsePlain: ''
+    lastResponsePlain: '',
+    activeTab: 'tools',
+    dynamicValues: {},        // For language, tone, format selections
+    hostName: 'le document',  // Updated in Office.onReady
+    useTrackChanges: true     // Insert/Replace in revision mode (Word only)
 };
 
-// ── API MODULE ──────────────────────────────────────────────
-var API = {
-    call: function(assistantId, userText, instructions) {
-        if (CONFIG.mode === 'mock') {
-            return API.mockCall(assistantId);
-        }
-        return API.localCall(assistantId, userText, instructions);
+// ── HOST API (Common API — works in Word, Excel, PowerPoint) ──
+var HostAPI = {
+    hostType: null, // Set during Office.onReady
+
+    getSelectedText: function() {
+        return new Promise(function(resolve) {
+            Office.context.document.getSelectedDataAsync(
+                Office.CoercionType.Text,
+                function(result) {
+                    if (result.status === Office.AsyncResultStatus.Succeeded) {
+                        resolve(result.value || '');
+                    } else {
+                        resolve('');
+                    }
+                }
+            );
+        });
     },
 
-    mockCall: function(assistantId) {
+    selectAll: function() {
+        // Word: use Word API for precise select-all
+        if (HostAPI.hostType === Office.HostType.Word) {
+            Word.run(function(ctx) {
+                var body = ctx.document.body;
+                body.load('text');
+                return ctx.sync().then(function() {
+                    var range = body.getRange();
+                    range.select();
+                    return ctx.sync();
+                });
+            }).then(function() {
+                UI.showToast('Document entier s\u00e9lectionn\u00e9', 'success');
+                HostAPI.pollSelection();
+            }).catch(function() {
+                UI.showToast('Erreur de s\u00e9lection', 'error');
+            });
+        }
+        // Excel: select all used range
+        else if (HostAPI.hostType === Office.HostType.Excel) {
+            Excel.run(function(ctx) {
+                var sheet = ctx.workbook.worksheets.getActiveWorksheet();
+                var range = sheet.getUsedRange();
+                range.select();
+                range.load('text');
+                return ctx.sync().then(function() {
+                    var text = range.text.map(function(row) { return row.join('\t'); }).join('\n');
+                    AppState.selectedText = text;
+                    UI.updateSelectionPreview();
+                    UI.updateSendButton();
+                });
+            }).then(function() {
+                UI.showToast('Plage utilis\u00e9e s\u00e9lectionn\u00e9e', 'success');
+            }).catch(function() {
+                UI.showToast('Erreur de s\u00e9lection', 'error');
+            });
+        }
+        // PowerPoint: just read current selection via Common API
+        else {
+            Office.context.document.getSelectedDataAsync(
+                Office.CoercionType.Text,
+                function(result) {
+                    if (result.status === Office.AsyncResultStatus.Succeeded) {
+                        AppState.selectedText = result.value || '';
+                        UI.updateSelectionPreview();
+                        UI.updateSendButton();
+                        UI.showToast('Texte s\u00e9lectionn\u00e9 r\u00e9cup\u00e9r\u00e9', 'success');
+                    } else {
+                        UI.showToast('S\u00e9lectionnez du texte dans la diapositive', 'error');
+                    }
+                }
+            );
+        }
+    },
+
+    selectCurrentParagraph: function() {
+        // Only available in Word
+        if (HostAPI.hostType === Office.HostType.Word) {
+            Word.run(function(ctx) {
+                var sel = ctx.document.getSelection();
+                var paragraphs = sel.paragraphs;
+                paragraphs.load('text');
+                return ctx.sync().then(function() {
+                    if (paragraphs.items.length > 0) {
+                        var range = paragraphs.items[0].getRange();
+                        range.select();
+                        return ctx.sync();
+                    }
+                });
+            }).then(function() {
+                UI.showToast('Paragraphe s\u00e9lectionn\u00e9', 'success');
+                HostAPI.pollSelection();
+            }).catch(function() {
+                UI.showToast('Erreur de s\u00e9lection', 'error');
+            });
+        } else {
+            UI.showToast('Disponible uniquement dans Word', 'error');
+        }
+    },
+
+    // Check if the host supports changeTrackingMode (WordApi 1.4+)
+    supportsTrackChanges: function() {
+        try {
+            return Office.context.requirements.isSetSupported('WordApi', '1.4');
+        } catch(e) { return false; }
+    },
+
+    // Helper: wraps a Word.run callback to enable/restore track changes
+    _withTrackChanges: function(wordRunCallback) {
+        var canTrack = AppState.useTrackChanges && HostAPI.supportsTrackChanges();
+        return Word.run(function(ctx) {
+            var doc = ctx.document;
+            if (canTrack) {
+                doc.load('changeTrackingMode');
+                return ctx.sync().then(function() {
+                    var previousMode = doc.changeTrackingMode;
+                    doc.changeTrackingMode = Word.ChangeTrackingMode.trackAll;
+                    return wordRunCallback(ctx).then(function() {
+                        // Restore previous mode if it was different
+                        if (previousMode !== Word.ChangeTrackingMode.trackAll) {
+                            doc.changeTrackingMode = previousMode;
+                        }
+                        return ctx.sync();
+                    });
+                });
+            } else {
+                return wordRunCallback(ctx);
+            }
+        });
+    },
+
+    insertAfterSelection: function(html) {
+        var plainText = UI.stripHtml(html);
+        // Word: use Word API with optional track changes
+        if (HostAPI.hostType === Office.HostType.Word) {
+            return HostAPI._withTrackChanges(function(ctx) {
+                var sel = ctx.document.getSelection();
+                sel.insertText('\n\n' + plainText, Word.InsertLocation.after);
+                return ctx.sync();
+            });
+        }
+        // Excel & PowerPoint: Common API — append after current content
+        return new Promise(function(resolve, reject) {
+            Office.context.document.getSelectedDataAsync(
+                Office.CoercionType.Text,
+                function(getResult) {
+                    var original = (getResult.status === Office.AsyncResultStatus.Succeeded) ? getResult.value : '';
+                    Office.context.document.setSelectedDataAsync(
+                        original + '\n\n' + plainText,
+                        { coercionType: Office.CoercionType.Text },
+                        function(setResult) {
+                            if (setResult.status === Office.AsyncResultStatus.Succeeded) resolve();
+                            else reject(new Error('Insertion \u00e9chou\u00e9e'));
+                        }
+                    );
+                }
+            );
+        });
+    },
+
+    replaceSelection: function(text) {
+        // Word: use Word API with optional track changes
+        if (HostAPI.hostType === Office.HostType.Word) {
+            return HostAPI._withTrackChanges(function(ctx) {
+                var sel = ctx.document.getSelection();
+                sel.insertText(text, Word.InsertLocation.replace);
+                return ctx.sync();
+            });
+        }
+        // Excel & PowerPoint: Common API
+        return new Promise(function(resolve, reject) {
+            Office.context.document.setSelectedDataAsync(
+                text,
+                { coercionType: Office.CoercionType.Text },
+                function(result) {
+                    if (result.status === Office.AsyncResultStatus.Succeeded) resolve();
+                    else reject(new Error('Remplacement \u00e9chou\u00e9'));
+                }
+            );
+        });
+    },
+
+    pollSelection: function() {
+        HostAPI.getSelectedText().then(function(text) {
+            if (text !== AppState.selectedText) {
+                AppState.selectedText = text;
+                UI.updateSelectionPreview();
+                UI.updateSendButton();
+            }
+        });
+    },
+
+    startPolling: function() {
+        HostAPI.stopPolling();
+        HostAPI.pollSelection();
+        AppState.pollingTimer = setInterval(function() { HostAPI.pollSelection(); }, CONFIG.selectionPollInterval);
+    },
+
+    stopPolling: function() {
+        if (AppState.pollingTimer) {
+            clearInterval(AppState.pollingTimer);
+            AppState.pollingTimer = null;
+        }
+    }
+};
+
+// ── API MODULE ─────────────────────────────────────────────
+var API = {
+    call: function(itemId, userText, instructions) {
+        if (CONFIG.mode === 'mock') return API.mockCall(itemId);
+        if (CONFIG.mode === 'local') return API.localCall(itemId, userText, instructions);
+        return API.realCall(itemId, userText, instructions);
+    },
+
+    mockCall: function(itemId) {
         return new Promise(function(resolve) {
             setTimeout(function() {
                 resolve({
-                    html: MOCK_RESPONSES[assistantId] || '<p>R\u00e9ponse de l\'assistant <strong>' + assistantId + '</strong>.</p>',
-                    plain: 'R\u00e9ponse mock pour ' + assistantId
+                    html: MOCK_RESPONSES[itemId] || '<p>R\u00e9ponse de l\u2019assistant <strong>' + itemId + '</strong>.</p>',
+                    plain: ''
                 });
             }, CONFIG.mockDelay);
         });
     },
 
-    localCall: function(assistantId, userText, instructions) {
-        var systemPrompt = PROMPTS[assistantId] || '';
-        var userMessage = userText;
-        if (instructions) {
-            userMessage += '\n\n--- Instructions suppl\u00e9mentaires ---\n' + instructions;
-        }
+    // ── Appel IA locale (text-generation-webui) ──
+    localCall: function(itemId, userText, instructions) {
+        var systemPrompt = PROMPTS[itemId] || '';
+        var userMessage = API._buildUserMessage(userText, instructions);
 
         return fetch(CONFIG.localEndpoint, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: CONFIG.model,
                 max_tokens: CONFIG.maxTokens,
@@ -990,270 +1084,332 @@ var API = {
             return res.json();
         })
         .then(function(data) {
-            var text = data.choices && data.choices[0] && data.choices[0].message
+            var text = (data.choices && data.choices[0] && data.choices[0].message)
                 ? data.choices[0].message.content
-                : 'Erreur : r\u00e9ponse inattendue de l\'IA locale.';
+                : 'Erreur : r\u00e9ponse inattendue de l\u2019IA locale.';
             return { html: UI.markdownToHtml(text), plain: text };
         })
         .catch(function(err) {
             return {
-                html: '<p style="color:var(--error)"><strong>Erreur IA locale :</strong> ' + UI.escapeHtml(err.message)
-                    + '</p><p style="font-size:11px;color:var(--text-muted);">V\u00e9rifiez que text-generation-webui tourne avec le flag <code>--api</code> sur le port 5000.</p>',
+                html: '<p style="color:var(--error)"><strong>Erreur IA locale :</strong> ' + UI.escapeHtml(err.message) + '</p>'
+                    + '<p style="font-size:11px;color:var(--text-sec)">V\u00e9rifiez que text-generation-webui est lanc\u00e9 avec <code>--api</code> (port 5000).</p>',
                 plain: 'Erreur: ' + err.message
             };
         });
     },
 
-    checkLocalHealth: function() {
-        var dot = document.getElementById('localStatusDot');
-        if (dot) dot.className = 'status-dot checking';
+    // ── Appel API entreprise ──
+    realCall: function(itemId, userText, instructions) {
+        var systemPrompt = PROMPTS[itemId] || '';
+        var userMessage = API._buildUserMessage(userText, instructions);
 
-        return fetch(CONFIG.localModelsEndpoint, {
-            method: 'GET',
-            signal: AbortSignal.timeout ? AbortSignal.timeout(3000) : undefined
+        var headers = { 'Content-Type': 'application/json' };
+        if (CONFIG.apiKey) headers['Authorization'] = 'Bearer ' + CONFIG.apiKey;
+
+        return fetch(CONFIG.apiEndpoint, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({
+                model: CONFIG.model,
+                max_tokens: CONFIG.maxTokens,
+                temperature: CONFIG.temperature,
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: userMessage }
+                ]
+            })
         })
-        .then(function(res) {
-            if (!res.ok) throw new Error('not ok');
-            return res.json();
-        })
+        .then(function(res) { return res.json(); })
         .then(function(data) {
-            if (dot) dot.className = 'status-dot connected';
-            return true;
-        })
-        .catch(function() {
-            if (dot) dot.className = 'status-dot disconnected';
-            return false;
-        });
-    }
-};
-
-// ── WORD API MODULE ─────────────────────────────────────────
-var WordAPI = {
-    getSelection: function() {
-        return Word.run(function(context) {
-            var sel = context.document.getSelection();
-            sel.load('text');
-            return context.sync().then(function() {
-                return sel.text || '';
-            });
-        }).catch(function() { return ''; });
-    },
-
-    insertAfterSelection: function(html) {
-        return Word.run(function(context) {
-            var sel = context.document.getSelection();
-            sel.insertHtml('<br/>' + html, Word.InsertLocation.after);
-            return context.sync();
-        });
-    },
-
-    replaceSelection: function(text) {
-        return Word.run(function(context) {
-            var sel = context.document.getSelection();
-            sel.insertText(text, Word.InsertLocation.replace);
-            return context.sync();
-        });
-    },
-
-    startPolling: function() {
-        WordAPI.stopPolling();
-        WordAPI.pollOnce();
-        AppState.pollingTimer = setInterval(WordAPI.pollOnce, CONFIG.selectionPollInterval);
-    },
-
-    stopPolling: function() {
-        if (AppState.pollingTimer) {
-            clearInterval(AppState.pollingTimer);
-            AppState.pollingTimer = null;
-        }
-    },
-
-    pollOnce: function() {
-        WordAPI.getSelection().then(function(text) {
-            if (text !== AppState.selectedText) {
-                AppState.selectedText = text;
-                UI.updateSelectionPreview();
-                UI.updateSendButton();
+            var text = '';
+            if (data.choices && data.choices[0] && data.choices[0].message) {
+                text = data.choices[0].message.content;
+            } else if (data.content && data.content[0]) {
+                text = data.content[0].text;
+            } else {
+                text = 'Erreur : r\u00e9ponse inattendue.';
             }
+            return { html: UI.markdownToHtml(text), plain: text };
+        })
+        .catch(function(err) {
+            return { html: '<p style="color:var(--error)">Erreur serveur IA : ' + UI.escapeHtml(err.message) + '</p>', plain: 'Erreur' };
         });
+    },
+
+    // ── Helpers ──
+    _buildUserMessage: function(userText, instructions) {
+        var msg = userText;
+        var dv = AppState.dynamicValues;
+        if (dv.targetLang) {
+            var langMap = {en:'anglais',de:'allemand',es:'espagnol',it:'italien',pt:'portugais',nl:'n\u00e9erlandais',zh:'chinois',ja:'japonais',ar:'arabe'};
+            msg = 'Langue cible : ' + (langMap[dv.targetLang] || dv.targetLang) + '\n\n' + msg;
+        }
+        if (dv.tone) msg = 'Ton demand\u00e9 : ' + dv.tone + '\n\n' + msg;
+        if (dv.format) msg = 'Format demand\u00e9 : ' + dv.format + '\n\n' + msg;
+        if (dv.emailTone) msg = 'Ton de l\u2019email : ' + dv.emailTone + '\n\n' + msg;
+        if (instructions) msg += '\n\n--- Instructions suppl\u00e9mentaires ---\n' + instructions;
+        return msg;
+    },
+
+    checkLocalHealth: function() {
+        var dot = document.getElementById('localDot');
+        if (dot) dot.className = 'status-dot wait';
+
+        return fetch(CONFIG.localHealthUrl, { method: 'GET' })
+            .then(function(res) {
+                if (!res.ok) throw new Error();
+                return res.json();
+            })
+            .then(function() {
+                if (dot) dot.className = 'status-dot ok';
+                return true;
+            })
+            .catch(function() {
+                if (dot) dot.className = 'status-dot ko';
+                return false;
+            });
     }
 };
 
-// ── DIALOG MANAGER ──────────────────────────────────────────
+// ── DIALOG MANAGER ─────────────────────────────────────────
 var DialogManager = {
     open: function(data) {
-        if (AppState.dialog) {
-            try { AppState.dialog.close(); } catch(e) {}
-            AppState.dialog = null;
-        }
-
-        Office.context.ui.displayDialogAsync(
-            CONFIG.dialogUrl,
-            { height: 75, width: 65, displayInIframe: false },
-            function(result) {
-                if (result.status === Office.AsyncResultStatus.Failed) {
-                    UI.showToast('Impossible d\'ouvrir la fen\u00eatre', 'error');
-                    return;
-                }
-                AppState.dialog = result.value;
-
-                AppState.dialog.addEventHandler(
-                    Office.EventType.DialogMessageReceived,
-                    function(arg) { DialogManager.handleMessage(arg); }
-                );
-
-                AppState.dialog.addEventHandler(
-                    Office.EventType.DialogEventReceived,
-                    function() { AppState.dialog = null; }
-                );
-
-                // Send data after dialog is ready (small delay)
-                setTimeout(function() {
-                    if (AppState.dialog) {
-                        AppState.dialog.messageChild(JSON.stringify(data));
-                    }
-                }, 800);
-            }
-        );
-    },
-
-    handleMessage: function(arg) {
         try {
-            var msg = JSON.parse(arg.message);
-            if (msg.action === 'insert') {
-                Handlers.doInsert();
-            } else if (msg.action === 'replace') {
-                Handlers.doReplace();
-            } else if (msg.action === 'copy') {
-                Handlers.doCopy();
-            } else if (msg.action === 'close') {
-                if (AppState.dialog) {
-                    try { AppState.dialog.close(); } catch(e) {}
-                    AppState.dialog = null;
+            Office.context.ui.displayDialogAsync(
+                CONFIG.dialogUrl,
+                { width: 65, height: 70, displayInIframe: false },
+                function(result) {
+                    if (result.status === Office.AsyncResultStatus.Succeeded) {
+                        var dialog = result.value;
+                        dialog.addEventHandler(Office.EventType.DialogMessageReceived, function(arg) {
+                            if (arg.message === 'ready') {
+                                dialog.messageChild(JSON.stringify(data));
+                            } else if (arg.message === 'close') {
+                                dialog.close();
+                            }
+                        });
+                        dialog.addEventHandler(Office.EventType.DialogEventReceived, function() {});
+                    }
                 }
-            }
+            );
         } catch(e) {
-            console.error('Dialog message error:', e);
+            // Fallback: open in new window for web
+            var win = window.open('', '_blank', 'width=800,height=600');
+            if (win) {
+                win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>R\u00e9sultat IA</title><style>body{font-family:Segoe UI,sans-serif;padding:24px;color:#1B1B1B;line-height:1.6;font-size:14px;max-width:800px;margin:0 auto}h3{color:#0A4D8C;margin-top:16px}table{width:100%;border-collapse:collapse;margin:12px 0}th{background:#E8F1FA;padding:8px;border:1px solid #E1E1E1;text-align:left}td{padding:8px;border:1px solid #E1E1E1}.diff-del{background:#FECDD3;color:#9F1239;text-decoration:line-through;padding:1px 4px;border-radius:3px}.diff-ins{background:#BBF7D0;color:#166534;padding:1px 4px;border-radius:3px}</style></head><body>' + data.resultHtml + '</body></html>');
+                win.document.close();
+            }
         }
     }
 };
 
-// ── UI MODULE ───────────────────────────────────────────────
+// ── UI MODULE ──────────────────────────────────────────────
 var UI = {
     init: function() {
-        UI.renderGrid();
+        UI.renderToolsGrid();
+        UI.renderAssistantsPanel();
+        UI.initTabs();
     },
 
-    renderGrid: function() {
-        var grid = document.getElementById('assistantsGrid');
-        var html = '';
-        ASSISTANTS.forEach(function(a) {
-            html += '<div class="assistant-card" data-id="' + a.id + '" onclick="Handlers.selectAssistant(\'' + a.id + '\')">'
-                + '<div class="card-icon" style="background:' + a.color + '15;color:' + a.color + '">' + a.icon + '</div>'
-                + '<div class="card-name">' + a.name + '</div>'
-                + '<div class="card-desc">' + a.description + '</div>'
-                + '</div>';
-        });
-        grid.innerHTML = html;
+    initTabs: function() {
+        var btns = document.querySelectorAll('.tab-btn');
+        for (var i = 0; i < btns.length; i++) {
+            btns[i].addEventListener('click', function() {
+                var tab = this.getAttribute('data-tab');
+                AppState.activeTab = tab;
+
+                // Update tab buttons
+                var all = document.querySelectorAll('.tab-btn');
+                for (var j = 0; j < all.length; j++) all[j].classList.remove('active');
+                this.classList.add('active');
+
+                // Update panels
+                document.getElementById('panelTools').classList.toggle('active', tab === 'tools');
+                document.getElementById('panelAssistants').classList.toggle('active', tab === 'assistants');
+            });
+        }
     },
 
-    showChatView: function(assistant) {
-        document.getElementById('viewGrid').style.display = 'none';
-        var chatView = document.getElementById('viewChat');
-        chatView.classList.add('active');
+    renderToolsGrid: function() {
+        var categories = { redaction: 'gridRedaction', analyse: 'gridAnalyse', forme: 'gridForme', generation: 'gridGeneration' };
+        for (var cat in categories) {
+            var container = document.getElementById(categories[cat]);
+            if (!container) continue;
+            container.innerHTML = '';
+            var items = TOOLS.filter(function(t) { return t.category === cat; });
+            for (var i = 0; i < items.length; i++) {
+                var t = items[i];
+                var card = document.createElement('div');
+                card.className = 'tool-card';
+                card.setAttribute('data-id', t.id);
+                card.innerHTML = '<div class="tc-icon">' + t.icon + '</div><div class="tc-name">' + UI.escapeHtml(t.name) + '</div><div class="tc-desc">' + UI.escapeHtml(t.desc) + '</div>';
+                card.onclick = (function(tool) { return function() { Handlers.selectTool(tool); }; })(t);
+                container.appendChild(card);
+            }
+        }
+    },
+
+    renderAssistantsPanel: function() {
+        var container = document.getElementById('assistantsContainer');
+        container.innerHTML = '';
+
+        if (ASSISTANT_GROUPS.length === 0) {
+            container.innerHTML = '<div class="empty-assistants">Aucun assistant configur\u00e9.<br/>Ajoutez des groupes dans ASSISTANT_GROUPS.</div>';
+            return;
+        }
+
+        for (var g = 0; g < ASSISTANT_GROUPS.length; g++) {
+            var group = ASSISTANT_GROUPS[g];
+            var section = document.createElement('div');
+            section.style.marginBottom = '16px';
+            section.innerHTML = '<div class="section-label" style="display:flex;align-items:center;gap:6px">' + group.groupIcon + ' ' + UI.escapeHtml(group.groupName) + '</div>';
+
+            var grid = document.createElement('div');
+            grid.className = 'assistants-grid';
+
+            for (var a = 0; a < group.assistants.length; a++) {
+                var ast = group.assistants[a];
+                var card = document.createElement('div');
+                card.className = 'assistant-card';
+                card.setAttribute('data-id', ast.id);
+                var bg = ast.color + '18';
+                card.innerHTML = '<div class="ac-icon" style="background:' + bg + '">' + ast.icon + '</div><div class="ac-name">' + UI.escapeHtml(ast.name) + '</div><div class="ac-desc">' + UI.escapeHtml(ast.desc) + '</div>';
+                card.onclick = (function(assistant) { return function() { Handlers.selectAssistant(assistant); }; })(ast);
+                grid.appendChild(card);
+            }
+
+            section.appendChild(grid);
+            container.appendChild(section);
+        }
+    },
+
+    showChatView: function(item) {
+        document.getElementById('panelTools').classList.remove('active');
+        document.getElementById('panelAssistants').classList.remove('active');
+        document.getElementById('tabBar').classList.add('hidden');
+        document.getElementById('viewChat').classList.add('active');
         document.getElementById('inputArea').classList.add('active');
 
-        document.getElementById('chatAssistantName').innerHTML = assistant.icon + ' ' + assistant.name;
-        document.getElementById('chatAssistantDesc').textContent = assistant.description;
+        document.getElementById('chatName').innerHTML = (item.icon || '') + ' ' + UI.escapeHtml(item.name);
+        document.getElementById('chatDesc').textContent = item.desc || item.description || '';
 
-        // Make chat view fill the main content
-        var mainContent = document.querySelector('.main-content');
-        mainContent.style.display = 'flex';
-        mainContent.style.flexDirection = 'column';
-
+        UI.renderDynamicOptions();
         UI.renderMessages();
-        UI.scrollToBottom();
     },
 
     showGridView: function() {
-        document.getElementById('viewGrid').style.display = 'block';
-        var chatView = document.getElementById('viewChat');
-        chatView.classList.remove('active');
+        document.getElementById('viewChat').classList.remove('active');
         document.getElementById('inputArea').classList.remove('active');
+        document.getElementById('tabBar').classList.remove('hidden');
+        document.getElementById('dynamicOptions').innerHTML = '';
 
-        var mainContent = document.querySelector('.main-content');
-        mainContent.style.display = 'block';
+        // Re-show the correct tab
+        document.getElementById('panelTools').classList.toggle('active', AppState.activeTab === 'tools');
+        document.getElementById('panelAssistants').classList.toggle('active', AppState.activeTab === 'assistants');
+    },
+
+    renderDynamicOptions: function() {
+        var container = document.getElementById('dynamicOptions');
+        container.innerHTML = '';
+        AppState.dynamicValues = {};
+
+        var item = AppState.currentItem;
+        if (!item || !item.options) return;
+
+        var opts = item.options;
+
+        if (opts.type === 'select') {
+            var row = document.createElement('div');
+            row.className = 'lang-row';
+            row.innerHTML = '<label>' + UI.escapeHtml(opts.label || 'Option') + ' :</label>';
+            var sel = document.createElement('select');
+            for (var i = 0; i < opts.choices.length; i++) {
+                var o = opts.choices[i];
+                sel.innerHTML += '<option value="' + o.value + '">' + UI.escapeHtml(o.label) + '</option>';
+            }
+            AppState.dynamicValues[opts.key] = opts.choices[0].value;
+            sel.onchange = function() { AppState.dynamicValues[opts.key] = this.value; };
+            row.appendChild(sel);
+            container.appendChild(row);
+        }
+
+        if (opts.type === 'chips') {
+            var bar = document.createElement('div');
+            bar.className = 'tone-chips';
+            var defaultVal = opts.default || opts.choices[0].value;
+            AppState.dynamicValues[opts.key] = defaultVal;
+
+            for (var j = 0; j < opts.choices.length; j++) {
+                var c = opts.choices[j];
+                var chip = document.createElement('button');
+                chip.className = 'tone-chip' + (c.value === defaultVal ? ' active' : '');
+                chip.textContent = c.label;
+                chip.setAttribute('data-val', c.value);
+                chip.onclick = function() {
+                    var siblings = this.parentNode.querySelectorAll('.tone-chip');
+                    for (var k = 0; k < siblings.length; k++) siblings[k].classList.remove('active');
+                    this.classList.add('active');
+                    AppState.dynamicValues[opts.key] = this.getAttribute('data-val');
+                };
+                bar.appendChild(chip);
+            }
+            container.appendChild(bar);
+        }
     },
 
     renderMessages: function() {
-        var container = document.getElementById('chatMessages');
-        var html = '';
+        var box = document.getElementById('chatMessages');
+        box.innerHTML = '';
 
         if (AppState.messages.length === 0) {
-            html = '<div style="text-align:center;padding:30px 10px;color:var(--text-muted);font-size:12px;">'
-                + '<div style="font-size:28px;margin-bottom:8px;">' + (AppState.currentAssistant ? AppState.currentAssistant.icon : '') + '</div>'
-                + 'S\u00e9lectionnez du texte dans Word et cliquez sur Envoyer pour commencer.'
-                + '</div>';
+            var empty = document.createElement('div');
+            empty.style.cssText = 'text-align:center;padding:30px 16px;color:var(--text-muted)';
+            empty.innerHTML = '<div style="font-size:28px;margin-bottom:8px">' + (AppState.currentItem ? AppState.currentItem.icon || '\u2728' : '\u2728') + '</div>'
+                + '<div style="font-size:12.5px;font-weight:600;margin-bottom:4px">' + UI.escapeHtml(AppState.currentItem ? AppState.currentItem.name : '') + '</div>'
+                + '<div style="font-size:11px">S\u00e9lectionnez du texte dans ' + (AppState.hostName || 'le document') + '<br/>puis cliquez sur Envoyer</div>';
+            box.appendChild(empty);
+            return;
         }
 
-        AppState.messages.forEach(function(msg, idx) {
+        for (var i = 0; i < AppState.messages.length; i++) {
+            var msg = AppState.messages[i];
+            var div = document.createElement('div');
+
             if (msg.role === 'user') {
-                html += '<div class="message message-user"><div class="bubble">';
-                html += '<div class="msg-label">Texte soumis</div>';
-                if (msg.selection) {
-                    var preview = msg.selection.length > 200 ? msg.selection.substring(0, 200) + '...' : msg.selection;
-                    html += '<div class="msg-selection">' + UI.escapeHtml(preview) + '</div>';
-                }
-                if (msg.instructions) {
-                    html += '<div class="msg-instructions">' + UI.escapeHtml(msg.instructions) + '</div>';
-                }
-                html += '</div></div>';
-            } else {
-                html += '<div class="message message-ai"><div class="bubble">';
-                html += '<div class="result-content">' + msg.content + '</div>';
-                html += '<div class="message-actions">';
-                html += '<button class="msg-action-btn" onclick="Handlers.doInsert()" title="Ins\u00e9rer apr\u00e8s la s\u00e9lection">\u2795 Ins\u00e9rer</button>';
-                html += '<button class="msg-action-btn" onclick="Handlers.doReplace()" title="Remplacer la s\u00e9lection">\uD83D\uDD04 Remplacer</button>';
-                html += '<button class="msg-action-btn" onclick="Handlers.doCopy()" title="Copier dans le presse-papiers">\uD83D\uDCCB Copier</button>';
-                html += '<button class="msg-action-btn" onclick="Handlers.openInWindow()" title="Ouvrir en fen\u00eatre">\u2197\uFE0F Fen\u00eatre</button>';
-                html += '<button class="msg-action-btn" onclick="Handlers.regenerate()" title="Reg\u00e9n\u00e9rer la r\u00e9ponse">\uD83D\uDD01 Reg\u00e9n\u00e9rer</button>';
+                div.className = 'message msg-user';
+                var preview = msg.selection.length > 150 ? msg.selection.substring(0, 150) + '\u2026' : msg.selection;
+                var html = '<div class="bubble"><div class="msg-label">TEXTE S\u00c9LECTIONN\u00c9 (' + msg.selection.length + ' car.)</div><div class="msg-sel-preview">' + UI.escapeHtml(preview) + '</div>';
+                if (msg.instructions) html += '<div class="msg-instr">' + UI.escapeHtml(msg.instructions) + '</div>';
                 html += '</div>';
-                html += '</div></div>';
+                div.innerHTML = html;
+            } else {
+                div.className = 'message msg-ai';
+                div.innerHTML = '<div class="bubble"><div class="result-content">' + msg.content + '</div>'
+                    + '<div class="msg-actions">'
+                    + '<button class="ma-btn" onclick="Handlers.doCopy()">&#128203; Copier</button>'
+                    + '<button class="ma-btn" onclick="Handlers.doInsert()">&#8595; Ins\u00e9rer</button>'
+                    + '<button class="ma-btn" onclick="Handlers.doReplace()">&#8634; Remplacer</button>'
+                    + '<button class="ma-btn" onclick="Handlers.openInWindow()">&#128194; Ouvrir</button>'
+                    + '<button class="ma-btn" onclick="Handlers.regenerate()">&#8635; Reg\u00e9n\u00e9rer</button>'
+                    + '</div></div>';
             }
-        });
-
-        container.innerHTML = html;
-    },
-
-    showLoading: function() {
-        var container = document.getElementById('chatMessages');
-        var loadingHtml = '<div class="loading-indicator" id="loadingMsg">'
-            + '<div class="loading-dots"><span></span><span></span><span></span></div>'
-            + 'Analyse en cours...'
-            + '</div>';
-        container.insertAdjacentHTML('beforeend', loadingHtml);
-        UI.scrollToBottom();
-    },
-
-    hideLoading: function() {
-        var el = document.getElementById('loadingMsg');
-        if (el) el.remove();
+            box.appendChild(div);
+        }
     },
 
     updateSelectionPreview: function() {
-        var content = document.getElementById('selectionContent');
-        var stats = document.getElementById('selectionStats');
-        var text = AppState.selectedText;
+        var content = document.getElementById('selContent');
+        var stats = document.getElementById('selStats');
 
-        if (!text || text.trim() === '') {
-            content.className = 'selection-empty';
-            content.textContent = 'S\u00e9lectionnez du texte dans Word...';
+        if (!AppState.selectedText || AppState.selectedText.trim() === '') {
+            content.className = 'sel-empty';
+            content.textContent = 'S\u00e9lectionnez du texte dans ' + (AppState.hostName || 'le document') + '...';
             stats.textContent = '';
         } else {
-            content.className = 'selection-text';
-            content.textContent = text.length > 300 ? text.substring(0, 300) + '...' : text;
-            var words = text.trim().split(/\s+/).length;
-            stats.textContent = words + ' mots \u00b7 ' + text.length + ' car.';
+            content.className = 'sel-text';
+            content.textContent = AppState.selectedText;
+            var words = AppState.selectedText.trim().split(/\s+/).length;
+            stats.textContent = AppState.selectedText.length + ' car. \u00b7 ~' + words + ' mots';
         }
     },
 
@@ -1262,22 +1418,33 @@ var UI = {
         btn.disabled = !AppState.selectedText || AppState.selectedText.trim() === '' || AppState.isLoading;
     },
 
-    scrollToBottom: function() {
-        var container = document.getElementById('chatMessages');
-        setTimeout(function() {
-            container.scrollTop = container.scrollHeight;
-        }, 50);
+    showLoading: function() {
+        var box = document.getElementById('chatMessages');
+        var div = document.createElement('div');
+        div.id = 'loadingMsg';
+        div.className = 'loading-wrap';
+        div.innerHTML = '<div class="dots"><span></span><span></span><span></span></div> Analyse en cours\u2026';
+        box.appendChild(div);
+        UI.scrollToBottom();
     },
 
-    showToast: function(message, type) {
-        var container = document.getElementById('toastContainer');
+    hideLoading: function() {
+        var el = document.getElementById('loadingMsg');
+        if (el) el.remove();
+    },
+
+    scrollToBottom: function() {
+        var box = document.getElementById('chatMessages');
+        setTimeout(function() { box.scrollTop = box.scrollHeight; }, 80);
+    },
+
+    showToast: function(text, type) {
+        var container = document.getElementById('toastBox');
         var toast = document.createElement('div');
         toast.className = 'toast' + (type ? ' toast-' + type : '');
-        toast.textContent = message;
+        toast.textContent = text;
         container.appendChild(toast);
-        setTimeout(function() {
-            if (toast.parentNode) toast.remove();
-        }, 3000);
+        setTimeout(function() { if (toast.parentNode) toast.remove(); }, 3000);
     },
 
     escapeHtml: function(text) {
@@ -1293,7 +1460,6 @@ var UI = {
     },
 
     markdownToHtml: function(text) {
-        // Basic markdown conversion for real API responses
         var html = text
             .replace(/### (.*)/g, '<h3>$1</h3>')
             .replace(/## (.*)/g, '<h3>$1</h3>')
@@ -1304,32 +1470,42 @@ var UI = {
             .replace(/\n\d+\. /g, '</li><li>');
 
         if (html.indexOf('<li>') > -1 && html.indexOf('<ul>') === -1) {
-            html = html.replace(/<\/li><li>/g, '</li><li>');
             html = '<ul><li>' + html + '</li></ul>';
         }
-
         return '<p>' + html + '</p>';
     }
 };
 
-// ── HANDLERS ────────────────────────────────────────────────
+// ── HANDLERS ───────────────────────────────────────────────
 var Handlers = {
-    selectAssistant: function(id) {
-        var assistant = ASSISTANTS.find(function(a) { return a.id === id; });
-        if (!assistant) return;
-
-        AppState.currentAssistant = assistant;
-        AppState.messages = [];
-        UI.showChatView(assistant);
-        WordAPI.startPolling();
-    },
-
-    goBack: function() {
-        AppState.currentAssistant = null;
+    selectTool: function(tool) {
+        AppState.currentItem = tool;
+        AppState.currentType = 'tool';
         AppState.messages = [];
         AppState.lastResponseHtml = '';
         AppState.lastResponsePlain = '';
-        WordAPI.stopPolling();
+        UI.showChatView(tool);
+        HostAPI.startPolling();
+    },
+
+    selectAssistant: function(assistant) {
+        AppState.currentItem = assistant;
+        AppState.currentType = 'assistant';
+        AppState.messages = [];
+        AppState.lastResponseHtml = '';
+        AppState.lastResponsePlain = '';
+        UI.showChatView(assistant);
+        HostAPI.startPolling();
+    },
+
+    goBack: function() {
+        AppState.currentItem = null;
+        AppState.currentType = '';
+        AppState.messages = [];
+        AppState.lastResponseHtml = '';
+        AppState.lastResponsePlain = '';
+        AppState.dynamicValues = {};
+        HostAPI.stopPolling();
         UI.showGridView();
     },
 
@@ -1342,8 +1518,8 @@ var Handlers = {
     },
 
     submit: function() {
-        if (!AppState.currentAssistant || !AppState.selectedText || AppState.selectedText.trim() === '') {
-            UI.showToast('S\u00e9lectionnez d\'abord du texte dans Word', 'error');
+        if (!AppState.currentItem || !AppState.selectedText || AppState.selectedText.trim() === '') {
+            UI.showToast('S\u00e9lectionnez du texte dans ' + (AppState.hostName || 'le document'), 'error');
             return;
         }
         if (AppState.isLoading) return;
@@ -1351,31 +1527,19 @@ var Handlers = {
         var instructions = document.getElementById('inputText').value.trim();
         var text = AppState.selectedText;
 
-        // Add user message
-        AppState.messages.push({
-            role: 'user',
-            selection: text,
-            instructions: instructions
-        });
-
+        AppState.messages.push({ role: 'user', selection: text, instructions: instructions });
         AppState.isLoading = true;
         UI.renderMessages();
         UI.showLoading();
         UI.updateSendButton();
         document.getElementById('inputText').value = '';
 
-        API.call(AppState.currentAssistant.id, text, instructions).then(function(result) {
+        API.call(AppState.currentItem.id, text, instructions).then(function(result) {
             AppState.isLoading = false;
             UI.hideLoading();
-
             AppState.lastResponseHtml = result.html;
             AppState.lastResponsePlain = result.plain || UI.stripHtml(result.html);
-
-            AppState.messages.push({
-                role: 'ai',
-                content: result.html
-            });
-
+            AppState.messages.push({ role: 'ai', content: result.html });
             UI.renderMessages();
             UI.scrollToBottom();
             UI.updateSendButton();
@@ -1383,143 +1547,122 @@ var Handlers = {
     },
 
     doInsert: function() {
-        if (!AppState.lastResponseHtml) {
-            UI.showToast('Aucun r\u00e9sultat \u00e0 ins\u00e9rer', 'error');
-            return;
-        }
-        WordAPI.insertAfterSelection(AppState.lastResponseHtml).then(function() {
-            UI.showToast('Texte ins\u00e9r\u00e9 dans le document', 'success');
-        }).catch(function() {
-            UI.showToast('Erreur lors de l\'insertion', 'error');
-        });
+        if (!AppState.lastResponseHtml) { UI.showToast('Aucun r\u00e9sultat', 'error'); return; }
+        HostAPI.insertAfterSelection(AppState.lastResponseHtml).then(function() {
+            var msg = 'Ins\u00e9r\u00e9 dans le document';
+            if (AppState.useTrackChanges && HostAPI.hostType === Office.HostType.Word) msg += ' (r\u00e9vision)';
+            UI.showToast(msg, 'success');
+        }).catch(function() { UI.showToast('Erreur d\u2019insertion', 'error'); });
     },
 
     doReplace: function() {
-        if (!AppState.lastResponsePlain) {
-            UI.showToast('Aucun r\u00e9sultat pour le remplacement', 'error');
-            return;
-        }
-        WordAPI.replaceSelection(AppState.lastResponsePlain).then(function() {
-            UI.showToast('S\u00e9lection remplac\u00e9e', 'success');
-        }).catch(function() {
-            UI.showToast('Erreur lors du remplacement', 'error');
-        });
+        if (!AppState.lastResponsePlain) { UI.showToast('Aucun r\u00e9sultat', 'error'); return; }
+        HostAPI.replaceSelection(AppState.lastResponsePlain).then(function() {
+            var msg = 'S\u00e9lection remplac\u00e9e';
+            if (AppState.useTrackChanges && HostAPI.hostType === Office.HostType.Word) msg += ' (r\u00e9vision)';
+            UI.showToast(msg, 'success');
+        }).catch(function() { UI.showToast('Erreur de remplacement', 'error'); });
     },
 
     doCopy: function() {
         var text = AppState.lastResponsePlain || '';
-        if (!text) {
-            UI.showToast('Aucun r\u00e9sultat \u00e0 copier', 'error');
-            return;
-        }
+        if (!text) { UI.showToast('Rien \u00e0 copier', 'error'); return; }
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(text).then(function() {
-                UI.showToast('Copi\u00e9 dans le presse-papiers', 'success');
-            }).catch(function() {
-                Handlers.fallbackCopy(text);
-            });
-        } else {
-            Handlers.fallbackCopy(text);
-        }
+                UI.showToast('Copi\u00e9', 'success');
+            }).catch(function() { Handlers.fallbackCopy(text); });
+        } else { Handlers.fallbackCopy(text); }
     },
 
     fallbackCopy: function(text) {
         var ta = document.createElement('textarea');
-        ta.value = text;
-        ta.style.position = 'fixed';
-        ta.style.left = '-9999px';
-        document.body.appendChild(ta);
-        ta.select();
-        try {
-            document.execCommand('copy');
-            UI.showToast('Copi\u00e9 dans le presse-papiers', 'success');
-        } catch(e) {
-            UI.showToast('Impossible de copier', 'error');
-        }
+        ta.value = text; ta.style.cssText = 'position:fixed;left:-9999px';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); UI.showToast('Copi\u00e9', 'success'); }
+        catch(e) { UI.showToast('Impossible de copier', 'error'); }
         document.body.removeChild(ta);
     },
 
     openInWindow: function() {
-        if (!AppState.lastResponseHtml || !AppState.currentAssistant) return;
-
-        var data = {
-            assistantName: AppState.currentAssistant.name,
-            assistantIcon: AppState.currentAssistant.icon,
-            assistantColor: AppState.currentAssistant.color,
+        if (!AppState.lastResponseHtml || !AppState.currentItem) return;
+        DialogManager.open({
+            assistantName: AppState.currentItem.name,
+            assistantIcon: AppState.currentItem.icon,
             resultHtml: AppState.lastResponseHtml,
-            sourceText: AppState.selectedText ? (AppState.selectedText.length > 500 ? AppState.selectedText.substring(0, 500) + '...' : AppState.selectedText) : ''
-        };
-        DialogManager.open(data);
+            sourceText: AppState.selectedText ? (AppState.selectedText.length > 500 ? AppState.selectedText.substring(0, 500) + '\u2026' : AppState.selectedText) : ''
+        });
+    },
+
+    toggleTrackChanges: function() {
+        AppState.useTrackChanges = !AppState.useTrackChanges;
+        var sw = document.getElementById('tcSwitch');
+        if (sw) sw.classList.toggle('active', AppState.useTrackChanges);
+        UI.showToast(AppState.useTrackChanges ? 'Mode Révision activé' : 'Mode Révision désactivé', 'success');
     },
 
     setMode: function(mode) {
         CONFIG.mode = mode;
-        var btnDemo = document.getElementById('btnModeDemo');
-        var btnLocal = document.getElementById('btnModeLocal');
-        if (mode === 'mock') {
-            btnDemo.classList.add('active');
-            btnLocal.classList.remove('active');
-            UI.showToast('Mode D\u00e9mo activ\u00e9');
-        } else {
-            btnDemo.classList.remove('active');
-            btnLocal.classList.add('active');
+        document.getElementById('btnModeDemo').classList.toggle('active', mode === 'mock');
+        document.getElementById('btnModeLocal').classList.toggle('active', mode === 'local');
+        if (mode === 'local') {
             API.checkLocalHealth().then(function(ok) {
-                if (ok) {
-                    UI.showToast('IA Locale connect\u00e9e', 'success');
-                } else {
-                    UI.showToast('IA Locale non d\u00e9tect\u00e9e \u2014 lancez text-generation-webui avec --api', 'error');
-                }
+                UI.showToast(ok ? 'IA Locale connect\u00e9e' : 'IA Locale non d\u00e9tect\u00e9e \u2014 relancez text-generation-webui avec --api', ok ? 'success' : 'error');
             });
+        } else {
+            UI.showToast('Mode Demo activ\u00e9');
         }
     },
 
     regenerate: function() {
-        // Remove last AI response and resubmit
         if (AppState.messages.length < 2) return;
-
-        // Find the last user message
-        var lastUserMsg = null;
+        var lastUser = null;
         for (var i = AppState.messages.length - 1; i >= 0; i--) {
-            if (AppState.messages[i].role === 'user') {
-                lastUserMsg = AppState.messages[i];
-                break;
-            }
+            if (AppState.messages[i].role === 'user') { lastUser = AppState.messages[i]; break; }
         }
-        if (!lastUserMsg) return;
-
-        // Remove last AI message
-        if (AppState.messages[AppState.messages.length - 1].role === 'ai') {
-            AppState.messages.pop();
-        }
+        if (!lastUser) return;
+        if (AppState.messages[AppState.messages.length - 1].role === 'ai') AppState.messages.pop();
 
         AppState.isLoading = true;
-        UI.renderMessages();
-        UI.showLoading();
-        UI.updateSendButton();
+        UI.renderMessages(); UI.showLoading(); UI.updateSendButton();
 
-        API.call(AppState.currentAssistant.id, lastUserMsg.selection, lastUserMsg.instructions).then(function(result) {
+        API.call(AppState.currentItem.id, lastUser.selection, lastUser.instructions).then(function(result) {
             AppState.isLoading = false;
             UI.hideLoading();
-
             AppState.lastResponseHtml = result.html;
             AppState.lastResponsePlain = result.plain || UI.stripHtml(result.html);
-
-            AppState.messages.push({
-                role: 'ai',
-                content: result.html
-            });
-
-            UI.renderMessages();
-            UI.scrollToBottom();
-            UI.updateSendButton();
+            AppState.messages.push({ role: 'ai', content: result.html });
+            UI.renderMessages(); UI.scrollToBottom(); UI.updateSendButton();
         });
     }
 };
 
-// ── INITIALIZATION ──────────────────────────────────────────
+// ── INITIALIZATION ─────────────────────────────────────────
 Office.onReady(function(info) {
-    if (info.host === Office.HostType.Word) {
+    var supportedHosts = [Office.HostType.Word, Office.HostType.Excel, Office.HostType.PowerPoint];
+    if (supportedHosts.indexOf(info.host) !== -1) {
+        HostAPI.hostType = info.host;
         UI.init();
+
+        // Hide "Paragraph" button if not in Word
+        if (info.host !== Office.HostType.Word) {
+            var btnP = document.getElementById('btnParagraph');
+            if (btnP) btnP.style.display = 'none';
+        }
+
+        // Show Track Changes toggle in Word only
+        if (info.host === Office.HostType.Word) {
+            var tcToggle = document.getElementById('tcToggle');
+            if (tcToggle) tcToggle.style.display = 'flex';
+            var tcSwitch = document.getElementById('tcSwitch');
+            if (tcSwitch) tcSwitch.classList.toggle('active', AppState.useTrackChanges);
+        }
+
+        // Update placeholder text based on host
+        var hostNames = {};
+        hostNames[Office.HostType.Word] = 'Word';
+        hostNames[Office.HostType.Excel] = 'Excel';
+        hostNames[Office.HostType.PowerPoint] = 'PowerPoint';
+        AppState.hostName = hostNames[info.host] || 'le document';
 
         document.getElementById('btnBack').onclick = Handlers.goBack;
         document.getElementById('btnClear').onclick = Handlers.clearChat;
@@ -1527,19 +1670,14 @@ Office.onReady(function(info) {
 
         var inputText = document.getElementById('inputText');
         inputText.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                Handlers.submit();
-            }
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); Handlers.submit(); }
         });
-
-        // Auto-resize textarea
         inputText.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = Math.min(this.scrollHeight, 80) + 'px';
         });
 
-        // V\u00e9rifier la connexion IA locale au d\u00e9marrage
+        // V\u00e9rifier si l'IA locale est accessible (met \u00e0 jour le point de statut)
         API.checkLocalHealth();
     }
 });
