@@ -842,6 +842,17 @@ var HostAPI = {
     hostType: null, // Set during Office.onReady
 
     getSelectedText: function() {
+        // Word : utiliser Word API pour r\u00e9cup\u00e9rer TOUT le texte s\u00e9lectionn\u00e9 (Common API tronque)
+        if (HostAPI.hostType === Office.HostType.Word) {
+            return Word.run(function(ctx) {
+                var sel = ctx.document.getSelection();
+                sel.load('text');
+                return ctx.sync().then(function() {
+                    return sel.text || '';
+                });
+            }).catch(function() { return ''; });
+        }
+        // Excel / PowerPoint : Common API
         return new Promise(function(resolve) {
             Office.context.document.getSelectedDataAsync(
                 Office.CoercionType.Text,
@@ -1084,9 +1095,10 @@ var API = {
             return res.json();
         })
         .then(function(data) {
-            var text = (data.choices && data.choices[0] && data.choices[0].message)
+            var raw = (data.choices && data.choices[0] && data.choices[0].message)
                 ? data.choices[0].message.content
                 : 'Erreur : r\u00e9ponse inattendue de l\u2019IA locale.';
+            var text = API._stripThinking(raw);
             return { html: UI.markdownToHtml(text), plain: text };
         })
         .catch(function(err) {
@@ -1149,6 +1161,11 @@ var API = {
         if (dv.emailTone) msg = 'Ton de l\u2019email : ' + dv.emailTone + '\n\n' + msg;
         if (instructions) msg += '\n\n--- Instructions suppl\u00e9mentaires ---\n' + instructions;
         return msg;
+    },
+
+    // Supprime les blocs <think>...</think> des mod\u00e8les de raisonnement
+    _stripThinking: function(text) {
+        return text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
     },
 
     checkLocalHealth: function() {
